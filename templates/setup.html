@@ -1,0 +1,718 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background text-foreground">
+    <!-- Header -->
+    <header class="py-6 animate-fade-in">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex items-center gap-3">
+                <svg class="h-8 w-8 text-primary animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
+                        Settings
+                    </h1>
+                    <p class="text-muted-foreground mt-1">
+                        Configure your program objectives and tasks
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 md:px-6 py-8">
+        <div class="max-w-4xl mx-auto space-y-8">
+            <!-- Program Selection Section -->
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in">
+                <h2 class="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    Program Selection
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Current Program Display -->
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-medium text-foreground mb-2">Current Program</label>
+                        <div id="currentProgramDisplay" class="px-3 py-2 bg-secondary/50 border border-border rounded-md text-foreground">
+                            Loading...
+                        </div>
+                    </div>
+                    
+                    <!-- Program Selector -->
+                    <div class="lg:col-span-1">
+                        <label for="programSelector" class="block text-sm font-medium text-foreground mb-2">Switch to Program</label>
+                        <div class="flex gap-2">
+                            <select id="programSelector" class="flex-1 px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                                <option value="">Select a program...</option>
+                                <!-- Options will be populated by JS -->
+                            </select>
+                            <button type="button" id="switchProgram" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors font-medium">
+                                Switch
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- New Program Creator -->
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-medium text-foreground mb-2">Create New Program</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="newProgramName" placeholder="Program name" 
+                                   class="flex-1 px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                            <button type="button" id="createProgram" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-medium">
+                                Create
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Program List for Mobile -->
+                <div id="programList" class="mt-6 lg:hidden">
+                    <h3 class="text-lg font-medium text-foreground mb-3">Available Programs</h3>
+                    <div id="programCards" class="space-y-2">
+                        <!-- Program cards will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program Information -->
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in">
+                <h2 class="text-xl font-semibold text-foreground mb-4">Program Information</h2>
+                <form id="programForm" class="space-y-4">
+                    <div>
+                        <label for="programName" class="block text-sm font-medium text-foreground mb-2">Program Name</label>
+                        <input type="text" id="programName" name="programName" required 
+                               value="{% if program %}{{ program.name }}{% endif %}"
+                               class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                               placeholder="e.g., Summer Fitness Challenge">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="startDate" class="block text-sm font-medium text-foreground mb-2">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" required
+                                   value="{% if program %}{{ program.start_date }}{% endif %}"
+                                   class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                        </div>
+                        <div>
+                            <label for="endDate" class="block text-sm font-medium text-foreground mb-2">End Date</label>
+                            <input type="date" id="endDate" name="endDate" required
+                                   value="{% if program %}{{ program.end_date }}{% endif %}"
+                                   class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Objectives Section -->
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-foreground">Objectives</h2>
+                    <button type="button" id="addObjective" class="inline-flex items-center px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring transition-colors text-sm font-medium">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add
+                    </button>
+                </div>
+                
+                <div id="objectivesList" class="space-y-3">
+                    {% if program and program.objectives %}
+                        {% for objective in program.objectives %}
+                        <div class="objective-item group bg-background/50 border border-border/50 rounded-lg p-4 hover:border-border transition-colors">
+                            <div class="flex items-start gap-4">
+                                <!-- Main objective name -->
+                                <div class="flex-1 min-w-0">
+                                    <input type="text" class="objective-name w-full text-base font-medium bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground" 
+                                           value="{{ objective.name }}" placeholder="Enter objective name..." required>
+                                </div>
+                                
+                                <!-- Quick settings -->
+                                <div class="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                    <!-- Frequency badge -->
+                                    <select class="objective-frequency text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
+                                        <option value="daily" {% if objective.frequency == 'daily' %}selected{% endif %}>Daily</option>
+                                        <option value="weekly" {% if objective.frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                                        <option value="program" {% if objective.frequency == 'program' %}selected{% endif %}>Program</option>
+                                    </select>
+                                    
+                                    <!-- Type toggle -->
+                                    <select class="objective-type text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
+                                        <option value="checkbox" {% if objective.type == 'checkbox' %}selected{% endif %}>✓</option>
+                                        <option value="cumulative" {% if objective.type == 'cumulative' %}selected{% endif %}>#</option>
+                                    </select>
+                                    
+                                    <!-- Target value (compact) -->
+                                    <input type="number" class="objective-target w-16 text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-center" 
+                                           min="1" value="{{ objective.target_value }}" step="0.1" placeholder="1">
+                                    
+                                    <!-- Scoring -->
+                                    <select class="objective-scoring text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
+                                        <option value="proportional" {% if objective.scoring == 'proportional' %}selected{% endif %}>%</option>
+                                        <option value="binary" {% if objective.scoring == 'binary' %}selected{% endif %}>All</option>
+                                    </select>
+                                    
+                                    <!-- Remove button -->
+                                    <button type="button" class="remove-objective text-muted-foreground hover:text-destructive p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <!-- Empty state -->
+                <div id="objectivesEmpty" class="text-center py-8 text-muted-foreground {% if program and program.objectives %}hidden{% endif %}">
+                    <svg class="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>No objectives yet. Add your first one!</p>
+                </div>
+            </div>
+
+            <!-- Tasks Section -->
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-foreground">Tasks</h2>
+                    <button type="button" id="addTask" class="inline-flex items-center px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring transition-colors text-sm font-medium">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add
+                    </button>
+                </div>
+                
+                <div id="tasksList" class="space-y-3">
+                    {% if program and program.tasks %}
+                        {% for task in program.tasks %}
+                        <div class="task-item group bg-background/50 border border-border/50 rounded-lg p-4 hover:border-border transition-colors">
+                            <div class="flex items-center gap-4">
+                                <!-- Task checkbox icon (decorative) -->
+                                <div class="flex-shrink-0 w-5 h-5 border-2 border-muted-foreground/30 rounded-sm"></div>
+                                
+                                <!-- Task name -->
+                                <input type="text" class="task-name flex-1 text-base bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground" 
+                                       value="{{ task.name }}" placeholder="Enter task name..." required>
+                                
+                                <!-- Remove button -->
+                                <button type="button" class="remove-task text-muted-foreground hover:text-destructive p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <!-- Empty state -->
+                <div id="tasksEmpty" class="text-center py-8 text-muted-foreground {% if program and program.tasks %}hidden{% endif %}">
+                    <svg class="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    <p>No tasks yet. Add your first one!</p>
+                </div>
+            </div>
+
+            <!-- Save Section -->
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.3s;">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-foreground">Save Your Program</h3>
+                        <p class="text-muted-foreground mt-1">Make sure to save your changes to start tracking your progress.</p>
+                        <a href="/progress-explanation" class="text-sm text-primary hover:text-primary/80 underline mt-2 inline-block">
+                            📊 How is progress calculated?
+                        </a>
+                    </div>
+                    <div class="flex gap-3">
+                        {% if program %}
+                        <a href="/" class="px-6 py-3 border border-border text-foreground bg-background hover:bg-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-colors font-medium">
+                            ← Dashboard
+                        </a>
+                        {% endif %}
+                        <button type="button" id="saveProgram" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-medium">
+                            Save Program
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* Responsive improvements for smaller screens */
+@media (max-width: 767px) {
+    .objective-item .grid {
+        grid-template-columns: 1fr;
+    }
+    .objective-item .grid > div {
+        grid-column: auto;
+    }
+}
+</style>
+
+<script>
+let objectiveCounter = 0;
+let taskCounter = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+    objectiveCounter = document.querySelectorAll('.objective-item').length;
+    taskCounter = document.querySelectorAll('.task-item').length;
+    
+    attachAllEventListeners();
+    loadProgramSelector(); // Load program selector
+    updateEmptyStates();
+});
+
+function attachAllEventListeners() {
+    // Add objective
+    document.getElementById('addObjective').addEventListener('click', () => {
+        addObjectiveItem();
+        updateEmptyStates();
+        // Focus on the new objective name input
+        const newItem = document.querySelector('.objective-item:last-child .objective-name');
+        if (newItem) newItem.focus();
+    });
+
+    // Add task
+    document.getElementById('addTask').addEventListener('click', () => {
+        addTaskItem();
+        updateEmptyStates();
+        // Focus on the new task name input
+        const newItem = document.querySelector('.task-item:last-child .task-name');
+        if (newItem) newItem.focus();
+    });
+
+    // Existing objectives
+    document.querySelectorAll('.objective-item').forEach(item => {
+        attachObjectiveEventListeners(item);
+    });
+
+    // Existing tasks
+    document.querySelectorAll('.task-item').forEach(item => {
+        attachTaskEventListeners(item);
+    });
+    
+    // Save program
+    document.getElementById('saveProgram').addEventListener('click', saveProgram);
+}
+
+function attachObjectiveEventListeners(objectiveElement) {
+    objectiveElement.querySelector('.remove-objective').addEventListener('click', e => {
+        e.target.closest('.objective-item').remove();
+        updateEmptyStates();
+    });
+}
+
+function attachTaskEventListeners(taskElement) {
+    taskElement.querySelector('.remove-task').addEventListener('click', e => {
+        e.target.closest('.task-item').remove();
+        updateEmptyStates();
+    });
+}
+
+function updateEmptyStates() {
+    const objectivesEmpty = document.getElementById('objectivesEmpty');
+    const tasksEmpty = document.getElementById('tasksEmpty');
+    const objectivesList = document.getElementById('objectivesList');
+    const tasksList = document.getElementById('tasksList');
+    
+    // Show/hide empty states
+    const hasObjectives = objectivesList.children.length > 0;
+    const hasTasks = tasksList.children.length > 0;
+    
+    if (objectivesEmpty) {
+        objectivesEmpty.classList.toggle('hidden', hasObjectives);
+    }
+    if (tasksEmpty) {
+        tasksEmpty.classList.toggle('hidden', hasTasks);
+    }
+}
+
+function getCurrentConfiguration() {
+    const form = document.getElementById('programForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return null;
+    }
+    
+    const objectives = Array.from(document.querySelectorAll('.objective-item')).map((item, index) => {
+        const name = item.querySelector('.objective-name').value.trim();
+        return name ? {
+            id: `obj_${index}`,
+            name: name,
+            type: item.querySelector('.objective-type').value,
+            frequency: item.querySelector('.objective-frequency').value,
+            scoring: item.querySelector('.objective-scoring').value,
+            target_value: parseFloat(item.querySelector('.objective-target').value) || 1,
+            unit: "",
+            start_value: 0
+        } : null;
+    }).filter(Boolean);
+    
+    const tasks = Array.from(document.querySelectorAll('.task-item')).map((item, index) => {
+        const name = item.querySelector('.task-name').value.trim();
+        return name ? { id: `task_${index}`, name: name } : null;
+    }).filter(Boolean);
+    
+    return {
+        name: document.getElementById('programName').value,
+        start_date: document.getElementById('startDate').value,
+        end_date: document.getElementById('endDate').value,
+        objectives: objectives,
+        tasks: tasks
+    };
+}
+
+function loadConfiguration(config) {
+    document.getElementById('programName').value = config.name || '';
+    document.getElementById('startDate').value = config.start_date || '';
+    document.getElementById('endDate').value = config.end_date || '';
+    
+    const objectivesList = document.getElementById('objectivesList');
+    objectivesList.innerHTML = '';
+    if (config.objectives) {
+        config.objectives.forEach(obj => addObjectiveItem(obj));
+    }
+    
+    const tasksList = document.getElementById('tasksList');
+    tasksList.innerHTML = '';
+    if (config.tasks) {
+        config.tasks.forEach(task => addTaskItem(task));
+    }
+    
+    document.querySelectorAll('.objective-item').forEach(attachObjectiveEventListeners);
+    document.querySelectorAll('.task-item').forEach(attachTaskEventListeners);
+    updateEmptyStates();
+}
+
+function addObjectiveItem(objective = null) {
+    const objectivesList = document.getElementById('objectivesList');
+    const div = document.createElement('div');
+    div.className = 'objective-item group bg-background/50 border border-border/50 rounded-lg p-4 hover:border-border transition-colors';
+    div.innerHTML = `
+        <div class="flex items-start gap-4">
+            <!-- Main objective name -->
+            <div class="flex-1 min-w-0">
+                <input type="text" class="objective-name w-full text-base font-medium bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground" 
+                       value="${objective ? objective.name : ''}" placeholder="Enter objective name..." required>
+            </div>
+            
+            <!-- Quick settings -->
+            <div class="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                <!-- Frequency badge -->
+                <select class="objective-frequency text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="daily" ${objective && objective.frequency === 'daily' ? 'selected' : ''}>Daily</option>
+                    <option value="weekly" ${objective && objective.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+                    <option value="program" ${objective && objective.frequency === 'program' ? 'selected' : ''}>Program</option>
+                </select>
+                
+                <!-- Type toggle -->
+                <select class="objective-type text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="checkbox" ${objective && objective.type === 'checkbox' ? 'selected' : ''}>✓</option>
+                    <option value="cumulative" ${objective && objective.type === 'cumulative' ? 'selected' : ''}>8</option>
+                </select>
+                
+                <!-- Target value (compact) -->
+                <input type="number" class="objective-target w-16 text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-center" 
+                       min="1" value="${objective ? objective.target_value : 1}" step="0.1" placeholder="1">
+                
+                <!-- Scoring -->
+                <select class="objective-scoring text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="proportional" ${objective && objective.scoring === 'proportional' ? 'selected' : ''}>%</option>
+                    <option value="binary" ${objective && objective.scoring === 'binary' ? 'selected' : ''}>All</option>
+                </select>
+                
+                <!-- Remove button -->
+                <button type="button" class="remove-objective text-muted-foreground hover:text-destructive p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+    objectivesList.appendChild(div);
+    attachObjectiveEventListeners(div);
+}
+
+function addTaskItem(task = null) {
+    const tasksList = document.getElementById('tasksList');
+    const div = document.createElement('div');
+    div.className = 'task-item group bg-background/50 border border-border/50 rounded-lg p-4 hover:border-border transition-colors';
+    div.innerHTML = `
+        <div class="flex items-center gap-4">
+            <!-- Task checkbox icon (decorative) -->
+            <div class="flex-shrink-0 w-5 h-5 border-2 border-muted-foreground/30 rounded-sm"></div>
+            
+            <!-- Task name -->
+            <input type="text" class="task-name flex-1 text-base bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground" 
+                   value="${task ? task.name : ''}" placeholder="Enter task name..." required>
+            
+            <!-- Remove button -->
+            <button type="button" class="remove-task text-muted-foreground hover:text-destructive p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    tasksList.appendChild(div);
+    attachTaskEventListeners(div);
+}
+
+function saveProgram() {
+    const programData = getCurrentConfiguration();
+    if (!programData) return;
+
+    const startDate = new Date(programData.start_date);
+    const endDate = new Date(programData.end_date);
+    
+    if (endDate <= startDate) {
+        showAlert('End date must be after start date.', 'error');
+        return;
+    }
+    
+    if (programData.objectives.length === 0 && programData.tasks.length === 0) {
+        showAlert('Please add at least one objective or task.', 'error');
+        return;
+    }
+    
+    // Save to the main program.json file
+    fetch('/api/save_program', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(programData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Programme sauvegardé avec succès!');
+            // Reload page to refresh data after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert('Erreur lors de la sauvegarde du programme.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Erreur lors de la sauvegarde du programme.', 'error');
+    });
+}
+
+function showAlert(message, type = 'success') {
+    // Create a simple notification
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
+    
+    if (type === 'error') {
+        alertDiv.className += ' bg-red-500';
+    } else {
+        alertDiv.className += ' bg-green-500';
+    }
+    
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+    
+    // Animate in
+    setTimeout(() => {
+        alertDiv.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+        alertDiv.classList.add('translate-x-full');
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 300);
+    }, 4000);
+}
+
+function loadProgramSelector() {
+    // Load current program info
+    loadCurrentProgram();
+    
+    // Load available programs list
+    loadAvailablePrograms();
+    
+    // Set up event listeners for program management
+    document.getElementById('switchProgram').addEventListener('click', switchToSelectedProgram);
+    document.getElementById('createProgram').addEventListener('click', createNewProgram);
+    
+    // Allow Enter key to create program
+    document.getElementById('newProgramName').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            createNewProgram();
+        }
+    });
+}
+
+function loadCurrentProgram() {
+    fetch('/api/current_program')
+        .then(response => response.json())
+        .then(data => {
+            const display = document.getElementById('currentProgramDisplay');
+            if (data.current_program) {
+                display.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium">${data.current_program.name}</div>
+                            <div class="text-sm text-muted-foreground">ID: ${data.current_program.id}</div>
+                        </div>
+                        <div class="text-xs px-2 py-1 rounded-md ${data.current_program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
+                            ${data.current_program.has_data ? 'Has Data' : 'No Data'}
+                        </div>
+                    </div>
+                `;
+            } else {
+                display.innerHTML = '<span class="text-muted-foreground">No program selected</span>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading current program:', error);
+            document.getElementById('currentProgramDisplay').innerHTML = '<span class="text-destructive">Error loading program</span>';
+        });
+}
+
+function loadAvailablePrograms() {
+    fetch('/api/programs')
+        .then(response => response.json())
+        .then(programs => {
+            const selector = document.getElementById('programSelector');
+            const programCards = document.getElementById('programCards');
+            
+            // Clear existing options
+            selector.innerHTML = '<option value="">Select a program...</option>';
+            programCards.innerHTML = '';
+            
+            programs.forEach(program => {
+                // Add to selector (exclude current program)
+                if (!program.is_current) {
+                    const option = document.createElement('option');
+                    option.value = program.id;
+                    option.textContent = `${program.name} ${program.has_data ? '(has data)' : '(no data)'}`;
+                    selector.appendChild(option);
+                }
+                
+                // Add to mobile cards
+                const card = document.createElement('div');
+                card.className = `p-3 border border-border rounded-md ${program.is_current ? 'bg-primary/10 border-primary/30' : 'bg-background'}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-foreground">${program.name}</div>
+                            <div class="text-sm text-muted-foreground">ID: ${program.id}</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xs px-2 py-1 rounded-md ${program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
+                                ${program.has_data ? 'Has Data' : 'No Data'}
+                            </div>
+                            ${program.is_current ? 
+                                '<span class="text-xs px-2 py-1 bg-primary text-primary-foreground rounded-md">Current</span>' : 
+                                `<button onclick="switchToProgram('${program.id}')" class="text-xs px-2 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">Switch</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                programCards.appendChild(card);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading programs:', error);
+            showAlert('Error loading programs list', 'error');
+        });
+}
+
+function switchToSelectedProgram() {
+    const selector = document.getElementById('programSelector');
+    const programId = selector.value;
+    
+    if (!programId) {
+        showAlert('Please select a program first', 'error');
+        return;
+    }
+    
+    switchToProgram(programId);
+}
+
+function switchToProgram(programId) {
+    fetch('/api/select_program', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ program_id: programId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Program switched successfully!');
+            // Reload the page to show the new program data
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert(`Error switching program: ${data.error}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error switching program:', error);
+        showAlert('Error switching program', 'error');
+    });
+}
+
+function createNewProgram() {
+    const nameInput = document.getElementById('newProgramName');
+    const programName = nameInput.value.trim();
+    
+    if (!programName) {
+        showAlert('Please enter a program name', 'error');
+        return;
+    }
+    
+    // Generate program ID from name
+    const programId = programName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    
+    fetch('/api/create_program', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            program_id: programId,
+            program_name: programName 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('New program created successfully!');
+            nameInput.value = '';
+            
+            // Switch to the new program
+            setTimeout(() => {
+                switchToProgram(data.program_id);
+            }, 500);
+        } else {
+            showAlert(`Error creating program: ${data.error}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating program:', error);
+        showAlert('Error creating program', 'error');
+    });
+}
+</script>
+{% endblock %} 

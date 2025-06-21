@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Progress Calculation - Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background text-foreground">
+    <!-- Header -->
+    <header class="py-6 animate-fade-in">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex items-center gap-3">
+                <svg class="h-8 w-8 text-primary animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
+                        Progress Calculation
+                    </h1>
+                    <p class="text-muted-foreground mt-1">
+                        How your progress is calculated for {{ program.name }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 md:px-6 py-8">
+        <div class="max-w-6xl mx-auto space-y-8">
+            <!-- Back Button -->
+            <div class="animate-fade-in">
+                <a href="/setup" class="inline-flex items-center text-primary hover:text-primary/80 transition-colors">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Back to Settings
+                </a>
+            </div>
+
+            <!-- Overall Progress Summary -->
+            {% if progress %}
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in">
+                <h2 class="text-xl font-semibold text-foreground mb-4">Overall Progress</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-primary">{{ progress.current_progress }}%</div>
+                        <div class="text-sm text-muted-foreground">Current Progress</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-500">{{ progress.expected_progress }}%</div>
+                        <div class="text-sm text-muted-foreground">Expected Progress</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600">{{ progress.current_points }}</div>
+                        <div class="text-sm text-muted-foreground">Points Earned</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-gray-600">{{ progress.total_points }}</div>
+                        <div class="text-sm text-muted-foreground">Total Points</div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' if progress.is_on_track else 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200' }}">
+                        {{ 'On Track' if progress.is_on_track else 'Behind Schedule' }}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Point System Explanation -->
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.1s;">
+                <h2 class="text-xl font-semibold text-foreground mb-4">Point System</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">1 pt</div>
+                        <div class="text-sm font-medium text-blue-800 dark:text-blue-200">Daily Objective</div>
+                        <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">Per day completed</div>
+                    </div>
+                    <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">5 pts</div>
+                        <div class="text-sm font-medium text-purple-800 dark:text-purple-200">Weekly Objective</div>
+                        <div class="text-xs text-purple-600 dark:text-purple-400 mt-1">Per week completed</div>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">5 pts</div>
+                        <div class="text-sm font-medium text-green-800 dark:text-green-200">Task</div>
+                        <div class="text-xs text-green-600 dark:text-green-400 mt-1">When completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Objectives Breakdown -->
+            {% if breakdown.objectives %}
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.2s;">
+                <h2 class="text-xl font-semibold text-foreground mb-6">Objectives Breakdown</h2>
+                <div class="space-y-6">
+                    {% for obj_data in breakdown.objectives %}
+                    <div class="border border-border rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-foreground">{{ obj_data.objective.name }}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-xs px-2 py-1 rounded-md bg-secondary text-foreground">
+                                        {{ obj_data.objective.frequency.title() }}
+                                    </span>
+                                    <span class="text-xs px-2 py-1 rounded-md bg-secondary text-foreground">
+                                        {{ obj_data.objective.weight }} pts each
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-foreground">
+                                    {{ obj_data.current_points }} / {{ obj_data.total_points }}
+                                </div>
+                                <div class="text-sm text-muted-foreground">
+                                    {{ ((obj_data.current_points / obj_data.total_points * 100) if obj_data.total_points > 0 else 0) | round(1) }}%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if obj_data.objective.frequency == 'daily' %}
+                        <!-- Daily progress visualization -->
+                        <div class="mt-4">
+                            <h4 class="text-sm font-medium text-muted-foreground mb-2">Daily Progress</h4>
+                            <div class="grid grid-cols-7 gap-1">
+                                {% for date_str, day_data in obj_data.daily_breakdown.items() %}
+                                <div class="text-center">
+                                    <div class="text-xs text-muted-foreground mb-1">
+                                        {{ date_str.split('-')[2] }}
+                                    </div>
+                                    <div class="w-8 h-8 rounded-sm flex items-center justify-center text-xs font-medium
+                                        {% if day_data.points > 0 %}
+                                            bg-green-500 text-white
+                                        {% else %}
+                                            bg-gray-200 dark:bg-gray-700 text-gray-500
+                                        {% endif %}">
+                                        {% if day_data.points > 0 %}✓{% else %}—{% endif %}
+                                    </div>
+                                    <div class="text-xs text-muted-foreground mt-1">
+                                        {{ day_data.points }}pt
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tasks Breakdown -->
+            {% if breakdown.tasks %}
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.3s;">
+                <h2 class="text-xl font-semibold text-foreground mb-6">Tasks Breakdown</h2>
+                <div class="space-y-4">
+                    {% for task_data in breakdown.tasks %}
+                    <div class="flex items-center justify-between p-4 border border-border rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="flex-shrink-0">
+                                {% if task_data.completed %}
+                                    <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                {% else %}
+                                    <div class="w-6 h-6 border-2 border-gray-300 rounded-sm"></div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-foreground">{{ task_data.task.name }}</h3>
+                                {% if task_data.completed and task_data.completion_date %}
+                                <p class="text-sm text-muted-foreground">
+                                    Completed on {{ task_data.completion_date }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-foreground">
+                                {{ task_data.current_points }} / {{ task_data.total_points }}
+                            </div>
+                            <div class="text-sm text-muted-foreground">
+                                {{ task_data.task.weight }} points
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Calculation Explanation -->
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.4s;">
+                <h2 class="text-xl font-semibold text-foreground mb-4">How Progress is Calculated</h2>
+                <div class="space-y-4 text-muted-foreground">
+                    <div class="p-4 bg-background/50 rounded-lg">
+                        <h3 class="font-semibold text-foreground mb-2">Current Progress</h3>
+                        <p>Your current progress is calculated as: <strong class="text-foreground">(Points Earned / Total Possible Points) × 100</strong></p>
+                        <p class="text-sm mt-1">This shows how much of your program you've actually completed.</p>
+                    </div>
+                    <div class="p-4 bg-background/50 rounded-lg">
+                        <h3 class="font-semibold text-foreground mb-2">Expected Progress</h3>
+                        <p>Expected progress is calculated as: <strong class="text-foreground">(Days Elapsed / Total Program Days) × 100</strong></p>
+                        <p class="text-sm mt-1">This shows how much you should have completed by now based on time.</p>
+                    </div>
+                    <div class="p-4 bg-background/50 rounded-lg">
+                        <h3 class="font-semibold text-foreground mb-2">Point Values</h3>
+                        <ul class="text-sm space-y-1">
+                            <li>• <strong class="text-foreground">Daily objectives:</strong> 1 point per day completed</li>
+                            <li>• <strong class="text-foreground">Weekly objectives:</strong> 5 points per week when target is reached</li>
+                            <li>• <strong class="text-foreground">Program objectives:</strong> 15 points when target is reached</li>
+                            <li>• <strong class="text-foreground">Tasks:</strong> 5 points each when completed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %} 

@@ -1,0 +1,549 @@
+import json
+import csv
+import os
+from datetime import datetime, timedelta
+from dataclasses import dataclass
+
+
+@dataclass
+class Objective:
+    id: str
+    name: str
+    type: str  # 'checkbox', 'cumulative' or 'latest'
+    frequency: str  # 'daily', 'weekly', 'program'
+    scoring: str  # 'binary' (all points or none) or 'proportional' (points based on progress ratio)
+    start_value: int
+    target_value: int
+    unit: str = ""
+    weight: int = 1
+
+
+@dataclass
+class Task:
+    id: str
+    name: str
+    weight: int
+
+
+@dataclass
+class Program:
+    name: str
+    start_date: str
+    end_date: str
+    objectives: list[Objective]
+    tasks: list[Task]
+
+
+@dataclass
+class ProgramInfo:
+    id: str
+    name: str
+    folder_path: str
+    has_data: bool = False
+
+
+class ProgressTracker:
+    def __init__(self, data_dir="data"):
+        self.data_dir = data_dir
+        self.current_program_id = None
+        self.program = None
+
+        # Ensure data directory exists
+        os.makedirs(data_dir, exist_ok=True)
+
+        # Load current program selection
+        self._load_current_program_selection()
+
+    def _load_current_program_selection(self):
+        """Load the currently selected program ID"""
+        current_file = os.path.join(self.data_dir, "current_program.txt")
+        if os.path.exists(current_file):
+            with open(current_file, "r", encoding="utf-8") as f:
+                self.current_program_id = f.read().strip()
+        else:
+            # If no current program, use default if it exists
+            if os.path.exists(os.path.join(self.data_dir, "program.json")):
+                self.current_program_id = "default"
+            else:
+                self.current_program_id = None
+
+    def _save_current_program_selection(self):
+        """Save the currently selected program ID"""
+        current_file = os.path.join(self.data_dir, "current_program.txt")
+        with open(current_file, "w", encoding="utf-8") as f:
+            f.write(self.current_program_id or "")
+
+    def get_program_folder(self):
+        """Get the folder path for the current program"""
+        if self.current_program_id == "default":
+            return self.data_dir
+        elif self.current_program_id:
+            return os.path.join(self.data_dir, self.current_program_id)
+        else:
+            return self.data_dir
+
+    def get_program_file(self):
+        """Get the program.json file path for the current program"""
+        return os.path.join(self.get_program_folder(), "program.json")
+
+    def get_user_data_file(self):
+        """Get the user_data.csv file path for the current program"""
+        return os.path.join(self.get_program_folder(), "user_data.csv")
+
+    def list_available_programs(self):
+        """List all available programs"""
+        programs = []
+
+        # Check for default program (files directly in data directory)
+        if os.path.exists(os.path.join(self.data_dir, "program.json")):
+            program_data = self._load_program_data(
+                os.path.join(self.data_dir, "program.json")
+            )
+            has_data = os.path.exists(os.path.join(self.data_dir, "user_data.csv"))
+            programs.append(
+                ProgramInfo(
+                    id="default",
+                    name=program_data.get("name", "Default Program")
+                    if program_data
+                    else "Default Program",
+                    folder_path=self.data_dir,
+                    has_data=has_data,
+                )
+            )
+
+        # Check for programs in subdirectories
+        for item in os.listdir(self.data_dir):
+            item_path = os.path.join(self.data_dir, item)
+            if os.path.isdir(item_path):
+                program_file = os.path.join(item_path, "program.json")
+                if os.path.exists(program_file):
+                    program_data = self._load_program_data(program_file)
+                    has_data = os.path.exists(os.path.join(item_path, "user_data.csv"))
+                    programs.append(
+                        ProgramInfo(
+                            id=item,
+                            name=program_data.get("name", item)
+                            if program_data
+                            else item,
+                            folder_path=item_path,
+                            has_data=has_data,
+                        )
+                    )
+
+        return programs
+
+    def _load_program_data(self, program_file):
+        """Load program data from a JSON file"""
+        try:
+            with open(program_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return None
+
+    def select_program(self, program_id):
+        """Select a program by ID"""
+        available_programs = self.list_available_programs()
+        program_ids = [p.id for p in available_programs]
+
+        if program_id not in program_ids:
+            raise ValueError(
+                f"Program '{program_id}' not found. Available programs: {program_ids}"
+            )
+
+        self.current_program_id = program_id
+        self._save_current_program_selection()
+        self.program = None  # Force reload
+
+    def create_new_program(self, program_id, program_name):
+        """Create a new program folder and basic structure"""
+        if program_id == "default":
+            raise ValueError("Cannot create program with ID 'default'")
+
+        program_folder = os.path.join(self.data_dir, program_id)
+        os.makedirs(program_folder, exist_ok=True)
+
+        # Create empty program.json
+        program_data = {
+            "name": program_name,
+            "start_date": "",
+            "end_date": "",
+            "objectives": [],
+            "tasks": [],
+        }
+
+        program_file = os.path.join(program_folder, "program.json")
+        with open(program_file, "w", encoding="utf-8") as f:
+            json.dump(program_data, f, indent=2, ensure_ascii=False)
+
+        # Create empty user_data.csv
+        user_data_file = os.path.join(program_folder, "user_data.csv")
+        with open(user_data_file, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["date", "item_id", "type", "value"])
+
+        return program_id
+
+    def load_program(self):
+        """Load program from JSON file"""
+        program_file = self.get_program_file()
+        if os.path.exists(program_file):
+            with open(program_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                objectives = [Objective(**obj) for obj in data["objectives"]]
+                tasks = [Task(**task) for task in data["tasks"]]
+                self.program = Program(
+                    name=data["name"],
+                    start_date=data["start_date"],
+                    end_date=data["end_date"],
+                    objectives=objectives,
+                    tasks=tasks,
+                )
+
+    def save_program(self, program_data):
+        """Save program to JSON file"""
+        program_file = self.get_program_file()
+
+        # Ensure the program folder exists
+        program_folder = self.get_program_folder()
+        os.makedirs(program_folder, exist_ok=True)
+
+        with open(program_file, "w", encoding="utf-8") as f:
+            json.dump(program_data, f, indent=2, ensure_ascii=False)
+        self.load_program()
+
+    def get_user_data(self):
+        """Load user progress data from CSV"""
+        user_data = {}
+        user_data_file = self.get_user_data_file()
+        if os.path.exists(user_data_file):
+            with open(user_data_file, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    date = row["date"]
+                    if date not in user_data:
+                        user_data[date] = {}
+                    user_data[date][row["item_id"]] = {
+                        "type": row["type"],
+                        "value": int(row["value"])
+                        if row["value"].isdigit()
+                        else row["value"],
+                    }
+        return user_data
+
+    def save_user_data_entry(self, date, item_id, item_type, value):
+        """Save a single user data entry to CSV"""
+        user_data_file = self.get_user_data_file()
+
+        # Ensure the program folder exists
+        program_folder = self.get_program_folder()
+        os.makedirs(program_folder, exist_ok=True)
+
+        # Read existing data
+        existing_data = []
+        fieldnames = ["date", "item_id", "type", "value"]
+        if os.path.exists(user_data_file):
+            with open(user_data_file, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                if reader.fieldnames:
+                    fieldnames = reader.fieldnames
+                existing_data = list(reader)
+
+        # Special handling for undoing tasks
+        if item_type == "task" and int(value) == 0:
+            # Remove all entries for this task id
+            updated_data = [row for row in existing_data if row["item_id"] != item_id]
+
+            with open(user_data_file, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(updated_data)
+            return
+
+        # Update or add entry
+        found = False
+        for row in existing_data:
+            if row["date"] == date and row["item_id"] == item_id:
+                row["value"] = str(value)
+                found = True
+                break
+
+        if not found:
+            existing_data.append(
+                {
+                    "date": date,
+                    "item_id": item_id,
+                    "type": item_type,
+                    "value": str(value),
+                }
+            )
+
+        # Write back to file
+        with open(user_data_file, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(existing_data)
+
+    def _compute_objective_points(self, objective, user_data):
+        """compute points for a specific objective based on type"""
+        if objective.frequency == "daily":
+            return self._compute_daily_objective_points(objective, user_data)
+        elif objective.frequency == "weekly":
+            return self._compute_weekly_objective_points(objective, user_data)
+        elif objective.frequency == "program":
+            return self._compute_program_objective_points(objective, user_data)
+        else:
+            print(
+                f"⚠️ Unknown frequency for objective {objective.id}: '{objective.frequency}'"
+            )
+            return 0
+
+    def _compute_daily_objective_points(self, objective, user_data):
+        """Compute points for daily objectives"""
+        total = 0
+        for date in user_data:
+            if objective.id in user_data[date]:
+                if user_data[date][objective.id]["value"]:
+                    if objective.type == "checkbox":
+                        total += objective.weight
+                    else:
+                        print(
+                            f"⚠️ Only 'checkbox' type has been implemented for daily objectives. Objective {objective.id} is of type '{objective.type}'"
+                        )
+                        return 0
+        return total
+
+    def _get_weekly_boundaries(self, start_date, end_date):
+        """Calculate weekly boundaries for the program period"""
+        # 1) Find first Monday
+        if start_date.weekday() == 0:
+            first_monday = start_date
+        else:
+            first_monday = start_date + timedelta(days=7 - start_date.weekday())
+
+        # 2) Find last Sunday
+        if end_date.weekday() == 6:
+            last_sunday = end_date
+        else:
+            last_sunday = end_date - timedelta(days=end_date.weekday() + 1)
+
+        # 3) Calculate number of complete weeks
+        if last_sunday < first_monday:
+            num_complete_weeks = 0
+        else:
+            num_complete_weeks = ((last_sunday - first_monday).days + 1) // 7
+
+        return {
+            "first_monday": first_monday,
+            "last_sunday": last_sunday,
+            "num_complete_weeks": num_complete_weeks,
+        }
+
+    def _compute_weekly_objective_points(self, objective, user_data):
+        """Compute points for weekly objectives"""
+
+        start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+        end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+
+        # Get weekly boundaries
+        weekly_info = self._get_weekly_boundaries(start_date, end_date)
+        first_monday = weekly_info["first_monday"]
+        last_sunday = weekly_info["last_sunday"]
+        num_weeks = weekly_info["num_complete_weeks"]
+
+        if num_weeks == 0:
+            return 0
+
+        # 4) Group data by weeks
+        weeks = {idx: [] for idx in range(num_weeks)}
+        for date_str in user_data:
+            if objective.id in user_data[date_str]:
+                date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                if date >= first_monday and date <= last_sunday:
+                    week_index = (date - first_monday).days // 7
+                    weeks[week_index].append(user_data[date_str][objective.id]["value"])
+
+        # 5) Compute points for each week
+        total_points = 0
+        for week_index, week_data in weeks.items():
+            # Compute week value
+            if objective.type == "checkbox":
+                week_value = len(week_data)
+            elif objective.type == "cumulative":
+                week_value = sum(week_data)
+            else:
+                print(
+                    f"⚠️ Only 'checkbox' and 'cumulative' types have been implemented for weekly objectives. Objective {objective.id} is of type '{objective.type}'"
+                )
+                return 0
+
+            # Apply scoring method
+            if objective.scoring == "binary":
+                if week_value >= objective.target_value:
+                    total_points += objective.weight
+            elif objective.scoring == "proportional":
+                total_points += objective.weight * week_value / objective.target_value
+            else:
+                print(
+                    f"⚠️ Unknown scoring method for objective {objective.id}: '{objective.scoring}'"
+                )
+                return 0
+
+        return total_points
+
+    def _compute_program_objective_points(self, objective, user_data):
+        """Compute points for program-wide objectives"""
+
+        # Select data
+        objective_data = [
+            user_data[date_str][objective.id]["value"]
+            for date_str in user_data
+            if objective.id in user_data[date_str]
+        ]
+
+        # Compute value
+        if objective.type == "checkbox":
+            value = len(objective_data)
+        elif objective.type == "cumulative":
+            value = sum(objective_data)
+        elif objective.type == "latest":
+            value = objective_data[-1] if objective_data else 0
+        else:
+            print(
+                f"⚠️ Unknown objective type for objective {objective.id}: '{objective.type}'"
+            )
+            return 0
+
+        # Apply scoring method
+        if objective.scoring == "binary":
+            if value >= objective.target_value:
+                return objective.weight
+            else:
+                return 0
+        elif objective.scoring == "proportional":
+            return objective.weight * value / objective.target_value
+        else:
+            print(
+                f"⚠️ Unknown scoring method for objective {objective.id}: '{objective.scoring}'"
+            )
+            return 0
+
+    def compute_progress(self, user_data):
+        "Compute current and expected progress"
+
+        # Check if program is loaded
+        if not self.program:
+            print("⚠️ No program loaded")
+            return None
+
+        # Check if user data is loaded
+        if not user_data:
+            print("⚠️ No user data loaded")
+            return None
+
+        # Compute program dates
+        start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+        end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        today = datetime.now().date()
+        total_days = (end_date - start_date).days + 1
+
+        if today < start_date:
+            elapsed_days = 0
+        elif today > end_date:
+            elapsed_days = total_days
+        else:
+            elapsed_days = (today - start_date).days + 1
+
+        # Calculate week boundaries for weekly objectives
+        weekly_info = self._get_weekly_boundaries(start_date, end_date)
+
+        # Compute progress
+        current_points = 0
+        total_points = 0
+        expected_points = 0
+
+        # Process objectives
+        for obj in self.program.objectives:
+            if obj.frequency == "daily":
+                # Daily objectives: each day in program period can contribute
+                obj_total_points = obj.weight * total_days
+                obj_expected_points = obj.weight * elapsed_days
+
+            elif obj.frequency == "weekly":
+                # Weekly objectives: only complete weeks can contribute
+                obj_total_points = obj.weight * weekly_info["num_complete_weeks"]
+
+                # Calculate expected points for weekly objectives
+                if weekly_info["num_complete_weeks"] == 0:
+                    obj_expected_points = 0
+                else:
+                    # Count how many complete weeks have elapsed
+                    elapsed_complete_weeks = 0
+
+                    if today >= weekly_info["first_monday"]:
+                        if today > weekly_info["last_sunday"]:
+                            # All weeks have elapsed
+                            elapsed_complete_weeks = weekly_info["num_complete_weeks"]
+                        else:
+                            # Calculate how many complete weeks have fully elapsed
+                            days_since_first_monday = (
+                                today - weekly_info["first_monday"]
+                            ).days
+                            elapsed_complete_weeks = (days_since_first_monday + 1) // 7
+
+                            # Make sure we don't exceed the total number of complete weeks
+                            elapsed_complete_weeks = min(
+                                elapsed_complete_weeks,
+                                weekly_info["num_complete_weeks"],
+                            )
+
+                    obj_expected_points = obj.weight * elapsed_complete_weeks
+
+            elif obj.frequency == "program":
+                # Program objectives: fixed points for entire program
+                obj_total_points = obj.weight
+                obj_expected_points = obj.weight * (elapsed_days / total_days)
+
+            else:
+                print(
+                    f"⚠️ Unknown objective frequency for objective {obj.id}: {obj.frequency}"
+                )
+                obj_total_points = 0
+                obj_expected_points = 0
+
+            total_points += obj_total_points
+            expected_points += obj_expected_points
+
+            # Compute objective points
+            current_points += self._compute_objective_points(obj, user_data)
+
+        # Process tasks
+        for task in self.program.tasks:
+            total_points += task.weight
+            expected_points += task.weight * (elapsed_days / total_days)
+
+            # Check if task is completed
+            for date_str in user_data:
+                if (
+                    task.id in user_data[date_str]
+                    and user_data[date_str][task.id]["value"]
+                ):
+                    current_points += task.weight
+                    break
+
+        # Compute percentages
+        if total_points > 0:
+            current_progress = current_points / total_points * 100
+            expected_progress = expected_points / total_points * 100
+        else:
+            current_progress = 0
+            expected_progress = 0
+
+        return {
+            "current_points": current_points,
+            "total_points": total_points,
+            "current_progress": round(current_progress, 1),
+            "expected_progress": round(expected_progress, 1),
+            "elapsed_days": elapsed_days,
+            "total_days": total_days,
+            "is_on_track": current_progress >= expected_progress,
+        }

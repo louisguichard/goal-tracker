@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Daily - Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background text-foreground">
+    <!-- Enhanced Header -->
+    <header class="py-4 animate-fade-in">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <svg class="h-7 w-7 text-primary animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-foreground">
+                            Daily
+                        </h1>
+                        <p class="text-muted-foreground text-sm">
+                            {{ program.name }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date Navigation -->
+            <div class="flex items-center justify-center gap-4 bg-card p-3 rounded-lg border border-border">
+                <button onclick="navigateDate(-1)" 
+                   class="flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-accent transition-colors">
+                    <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="text-center">
+                    <div class="text-base font-semibold text-foreground" id="dateDisplay">
+                        {{ selected_date.strftime('%A, %B %d, %Y') }}
+                    </div>
+                    <div class="text-xs text-muted-foreground">
+                        {{ selected_date.strftime('%Y-%m-%d') }}
+                    </div>
+                </div>
+                
+                <button onclick="navigateDate(1)" 
+                   class="flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-accent transition-colors">
+                    <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 md:px-6 py-6">
+        <!-- Progress Statistics -->
+        {% if program.objectives %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 112-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-2xl font-bold text-foreground">{{ program.objectives|length }}</div>
+                        <div class="text-sm text-muted-foreground">Active Objectives</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        {% set completed_count = day_data.values() | selectattr('value') | list | length %}
+                        <div class="text-2xl font-bold text-foreground">{{ completed_count }}</div>
+                        <div class="text-sm text-muted-foreground">Completed Today</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-2xl font-bold text-foreground">{{ program.objectives|length - completed_count }}</div>
+                        <div class="text-sm text-muted-foreground">Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- All Objectives - Condensed -->
+        {% if program.objectives %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-foreground mb-4 animate-fade-in">
+                Objectives
+            </h2>
+            <div class="space-y-2">
+                {% for objective in program.objectives %}
+                <div class="bg-card rounded-lg border border-border p-4 animate-fade-in flex items-center justify-between" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+                    <div class="flex-1">
+                        <h3 class="font-medium text-foreground">{{ objective.name }}</h3>
+                    </div>
+                    
+                    <div class="ml-4">
+                        {% if objective.type == "checkbox" %}
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" 
+                                       data-objective-id="{{ objective.id }}" 
+                                       data-type="binary"
+                                       {% if day_data.get(objective.id) and day_data.get(objective.id).value %}checked{% endif %}
+                                       class="sr-only peer objective-input">
+                                <div class="w-11 h-6 bg-secondary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        {% else %}
+                            <input type="number" 
+                                   data-objective-id="{{ objective.id }}" 
+                                   data-type="numeric"
+                                   value="{{ day_data.get(objective.id).value if day_data.get(objective.id) else 0 }}" 
+                                   min="0" 
+                                   step="0.1"
+                                   class="w-20 px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors objective-input">
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all inputs
+    document.querySelectorAll('.objective-input').forEach(input => {
+        input.addEventListener('change', saveProgress);
+    });
+    
+    // Fix date display for today/yesterday
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const selectedDateStr = '{{ selected_date.strftime("%Y-%m-%d") }}';
+    const selectedDate = new Date(selectedDateStr);
+    
+    const dateDisplay = document.getElementById('dateDisplay');
+    
+    if (selectedDate.toDateString() === today.toDateString()) {
+        dateDisplay.textContent = 'Today';
+    } else if (selectedDate.toDateString() === yesterday.toDateString()) {
+        dateDisplay.textContent = 'Yesterday';
+    }
+});
+
+function navigateDate(direction) {
+    const currentDateStr = '{{ selected_date.strftime("%Y-%m-%d") }}';
+    const currentDate = new Date(currentDateStr);
+    currentDate.setDate(currentDate.getDate() + direction);
+    
+    const newDateStr = currentDate.toISOString().split('T')[0];
+    window.location.href = `{{ url_for('daily') }}?date=${newDateStr}`;
+}
+
+function saveProgress(event) {
+    const input = event.target;
+    const date = '{{ selected_date.strftime("%Y-%m-%d") }}';
+    
+    let itemId, itemType, value;
+    
+    itemId = input.getAttribute('data-objective-id');
+    itemType = input.getAttribute('data-type');
+    
+    if (itemType === 'binary') {
+        value = input.checked ? 1 : 0;
+    } else {
+        value = parseFloat(input.value) || 0;
+    }
+    
+    // Save to server
+    fetch('/api/save_data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            date: date,
+            item_id: itemId,
+            type: itemType,
+            value: value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            showAlert('Error saving progress', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Error saving progress', 'error');
+    });
+}
+
+
+</script>
+{% endblock %} 
