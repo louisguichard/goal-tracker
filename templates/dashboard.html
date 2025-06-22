@@ -4,25 +4,10 @@
 
 {% block content %}
 <div class="min-h-screen bg-background text-foreground flex flex-col">
-    <!-- Enhanced Header - Limited to 80% width with reduced padding -->
-    <header class="py-2 animate-fade-in">
-        <div class="w-[80%] mx-auto px-6 md:px-8 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <svg class="h-8 w-8 text-primary animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <h1 class="text-2xl font-bold tracking-tight text-foreground">
-                    Goal Tracker
-                </h1>
-            </div>
-            <div class="text-right animate-fade-in" style="animation-delay: 0.1s;">
-                <p class="text-lg font-medium text-foreground" id="currentDate"></p>
-            </div>
-        </div>
-    </header>
+
 
     <!-- Main content - Full width, uses remaining height -->
-    <main class="flex-1 w-[80%] mx-auto px-6 md:px-8 py-4 space-y-6">
+    <main class="flex-1 w-[80%] mx-auto px-6 md:px-8 py-2 space-y-4">
         <!-- Program Progress Bar with Grid Animation - Same width as sections below -->
         <div class="bg-card p-8 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.2s;">
             <div class="flex justify-between items-center mb-6">
@@ -48,9 +33,9 @@
         <div class="grid grid-cols-2 gap-6" id="mainGrid">
             <!-- Weekly Progress Bars - Takes 1/2 of width -->
             <div class="col-span-1" id="weeklySection">
-                <div class="bg-card p-4 rounded-lg shadow-lg animate-fade-in h-full flex flex-col" style="animation-delay: 0.4s;">
+                <div class="bg-card p-4 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.4s;">
                     <h2 class="text-lg font-semibold mb-3 text-foreground">Weekly Breakdown</h2>
-                    <div class="space-y-3 flex-1 min-h-0" id="weeklyBars">
+                    <div class="space-y-2" id="weeklyBars">
                         <!-- Weekly bars will be populated by JavaScript -->
                     </div>
                 </div>
@@ -58,45 +43,45 @@
 
             <!-- Progress Calendar - Takes 1/2 of width -->
             <div class="col-span-1" id="calendarSection">
-                <div class="bg-card p-4 rounded-lg shadow-lg animate-fade-in h-full flex flex-col" style="animation-delay: 0.4s;">
-                    <div class="flex items-center justify-between mb-3">
+                <div class="bg-card p-4 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.4s;">
+                    <div class="flex items-center justify-between mb-2">
                         <h2 class="text-lg font-semibold text-foreground">Daily Activity</h2>
                         <div class="flex items-center gap-2" id="calendarNavigation" style="display: none;">
-                            <button id="prevMonth" class="p-2 rounded hover:bg-accent transition-colors">
-                                <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button id="prevMonth" class="p-1.5 rounded hover:bg-accent transition-colors">
+                                <svg class="h-3.5 w-3.5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                                 </svg>
                             </button>
-                            <span id="currentMonthYear" class="text-sm text-muted-foreground min-w-[120px] text-center"></span>
-                            <button id="nextMonth" class="p-2 rounded hover:bg-accent transition-colors">
-                                <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span id="currentMonthYear" class="text-xs text-muted-foreground min-w-[100px] text-center"></span>
+                            <button id="nextMonth" class="p-1.5 rounded hover:bg-accent transition-colors">
+                                <svg class="h-3.5 w-3.5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <div id="progressCalendar" class="space-y-2 flex-1 min-h-0 overflow-y-auto">
+                    <div id="progressCalendar" class="space-y-1.5">
                         <!-- Calendar will be populated by JavaScript -->
                     </div>
                     <!-- Legend -->
-                    <div class="flex items-center justify-center flex-wrap gap-x-4 gap-y-2 p-2 text-sm text-muted-foreground pt-3 border-t border-border mt-3">
-                        <div class="flex items-center gap-2">
-                            <svg class="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 p-1.5 text-xs text-muted-foreground pt-2 border-t border-border mt-2">
+                        <div class="flex items-center gap-1.5">
+                            <svg class="h-3 w-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            <span class="text-sm">Done</span>
+                            <span class="text-xs">Done</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="flex items-center gap-1.5">
+                            <svg class="h-3 w-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                             </svg>
-                            <span class="text-sm">Partial</span>
+                            <span class="text-xs">Partial</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <svg class="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="flex items-center gap-1.5">
+                            <svg class="h-3 w-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
-                            <span class="text-sm">Missed</span>
+                            <span class="text-xs">Missed</span>
                         </div>
                     </div>
                 </div>
@@ -137,11 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeDashboard() {
-    // Set current date in English
-    const now = new Date();
-    const englishDate = formatDateInEnglish(now);
-    document.getElementById('currentDate').textContent = englishDate;
-    
     // Create the progress grid (400 squares: 8 rows × 50 columns)
     createProgressGrid();
     
@@ -235,30 +215,30 @@ function updateProgressGrid(currentProgress, expectedProgress) {
     squares.forEach((square, index) => {
         setTimeout(() => {
             let squareClass = 'bg-secondary';
-            let pulseEffect = '';
             
             if (index < filledSquares) {
                 if (isAhead && index >= expectedSquares) {
                     squareClass = 'bg-green-500'; // Ahead of schedule
+                    // Add pulsing effect to the last green square (ahead)
+                    if (index === filledSquares - 1) {
+                        square.style.animation = 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite';
+                    }
                 } else {
                     squareClass = 'bg-primary'; // On schedule
-                }
-                
-                // Add pulsing effect to the last filled square
-                if (index === filledSquares - 1) {
-                    pulseEffect = 'animate-pulse';
-                    square.style.animation = 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite';
+                    // Add pulsing effect to the last filled square (on track)
+                    if (index === filledSquares - 1) {
+                        square.style.animation = 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite';
+                    }
                 }
             } else if (index < expectedSquares) {
                 squareClass = 'bg-orange-500'; // Behind schedule
+                // Add pulsing animation for the last orange square when behind
+                if (isBehind && index === expectedSquares - 1) {
+                    square.style.animation = 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite';
+                }
             }
             
-            // Add pulsing animation for the "next" square when behind
-            if (isBehind && index === expectedSquares - 1) {
-                square.style.animation = 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite';
-            }
-            
-            square.className = `aspect-square rounded-sm transition-all duration-500 ${squareClass} ${pulseEffect} opacity-100`;
+            square.className = `aspect-square rounded-sm transition-all duration-500 ${squareClass} opacity-100`;
         }, index * 3); // Staggered update
     });
 }

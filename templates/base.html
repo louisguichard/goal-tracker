@@ -182,17 +182,26 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center space-x-8">
-                    <a href="/" class="flex items-center space-x-2 transition-colors {% if request.endpoint == 'index' %}text-foreground font-semibold{% else %}text-muted-foreground hover:text-foreground{% endif %}">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    <!-- Goal Tracker Title -->
+                    <div class="flex items-center space-x-2">
+                        <svg class="h-6 w-6 text-primary animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span class="font-semibold">Dashboard</span>
-                    </a>
+                        <span class="text-xl font-bold tracking-tight text-foreground">Goal Tracker</span>
+                    </div>
+                    
+                    <!-- Navigation Links -->
+                    <a href="/" class="transition-colors {% if request.endpoint == 'index' %}text-foreground font-semibold{% else %}text-muted-foreground hover:text-foreground{% endif %}">Dashboard</a>
                     <a href="/daily" class="transition-colors {% if request.endpoint == 'daily' %}text-foreground font-semibold{% else %}text-muted-foreground hover:text-foreground{% endif %}">Daily</a>
                     <a href="/todo" class="transition-colors {% if request.endpoint == 'todo' %}text-foreground font-semibold{% else %}text-muted-foreground hover:text-foreground{% endif %}">To Do</a>
                     <a href="/setup" class="transition-colors {% if request.endpoint == 'setup' %}text-foreground font-semibold{% else %}text-muted-foreground hover:text-foreground{% endif %}">Settings</a>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <!-- Current Date -->
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-foreground" id="headerCurrentDate"></p>
+                    </div>
+                    
                     <!-- Dark mode toggle -->
                     <button id="darkModeToggle" class="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" title="Toggle dark mode">
                         <svg class="h-5 w-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,6 +272,20 @@
 
         // Dark mode functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Set current date in header
+            const headerDateElement = document.getElementById('headerCurrentDate');
+            if (headerDateElement) {
+                const now = new Date();
+                const englishMonths = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+                const month = englishMonths[now.getMonth()];
+                const day = now.getDate();
+                const year = now.getFullYear();
+                headerDateElement.textContent = `${month} ${day}, ${year}`;
+            }
+            
             const darkModeToggle = document.getElementById('darkModeToggle');
             const html = document.documentElement;
             
