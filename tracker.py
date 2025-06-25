@@ -222,11 +222,23 @@ class ProgressTracker:
                     date = row["date"]
                     if date not in user_data:
                         user_data[date] = {}
+
+                    # Improved value conversion
+                    value = row["value"]
+                    try:
+                        # Try to convert to float first, then to int if it's a whole number
+                        float_value = float(value)
+                        if float_value.is_integer():
+                            converted_value = int(float_value)
+                        else:
+                            converted_value = float_value
+                    except (ValueError, TypeError):
+                        # If conversion fails, keep as string
+                        converted_value = value
+
                     user_data[date][row["item_id"]] = {
                         "type": row["type"],
-                        "value": int(row["value"])
-                        if row["value"].isdigit()
-                        else row["value"],
+                        "value": converted_value,
                     }
         return user_data
 
@@ -369,7 +381,14 @@ class ProgressTracker:
             if objective.type == "checkbox":
                 week_value = len(week_data)
             elif objective.type == "cumulative":
-                week_value = sum(week_data)
+                # Convert all values to numbers and sum them
+                numeric_data = []
+                for val in week_data:
+                    try:
+                        numeric_data.append(float(val) if val else 0)
+                    except (ValueError, TypeError):
+                        numeric_data.append(0)
+                week_value = sum(numeric_data)
             else:
                 print(
                     f"⚠️ Only 'checkbox' and 'cumulative' types have been implemented for weekly objectives. Objective {objective.id} is of type '{objective.type}'"
@@ -404,9 +423,21 @@ class ProgressTracker:
         if objective.type == "checkbox":
             value = len(objective_data)
         elif objective.type == "cumulative":
-            value = sum(objective_data)
+            # Convert all values to numbers and sum them
+            numeric_data = []
+            for val in objective_data:
+                try:
+                    numeric_data.append(float(val) if val else 0)
+                except (ValueError, TypeError):
+                    numeric_data.append(0)
+            value = sum(numeric_data)
         elif objective.type == "latest":
-            value = objective_data[-1] if objective_data else 0
+            # Get the latest value and convert to number
+            latest_val = objective_data[-1] if objective_data else 0
+            try:
+                value = float(latest_val) if latest_val else 0
+            except (ValueError, TypeError):
+                value = 0
         else:
             print(
                 f"⚠️ Unknown objective type for objective {objective.id}: '{objective.type}'"

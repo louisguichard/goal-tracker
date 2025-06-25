@@ -140,11 +140,12 @@
                                         <option value="program" {% if objective.frequency == 'program' %}selected{% endif %}>Program</option>
                                     </select>
                                     
-                                    <!-- Type toggle -->
-                                    <select class="objective-type text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
-                                        <option value="checkbox" {% if objective.type == 'checkbox' %}selected{% endif %}>✓</option>
-                                        <option value="cumulative" {% if objective.type == 'cumulative' %}selected{% endif %}>#</option>
-                                    </select>
+                                                        <!-- Type toggle -->
+                    <select class="objective-type text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
+                        <option value="checkbox" {% if objective.type == 'checkbox' %}selected{% endif %}>✓</option>
+                        <option value="cumulative" {% if objective.type == 'cumulative' %}selected{% endif %}>↗</option>
+                        <option value="latest" {% if objective.type == 'latest' %}selected{% endif %}>#</option>
+                    </select>
                                     
                                     <!-- Target value (compact) -->
                                     <input type="number" class="objective-target w-16 text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-center" 
