@@ -352,9 +352,14 @@ class ProgressTracker:
 
     def _compute_weekly_objective_points(self, objective, user_data):
         """Compute points for weekly objectives"""
+        if not self.program or not self.program.start_date or not self.program.end_date:
+            return 0
 
-        start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
-        end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        try:
+            start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        except ValueError:
+            return 0
 
         # Get weekly boundaries
         weekly_info = self._get_weekly_boundaries(start_date, end_date)
@@ -472,8 +477,12 @@ class ProgressTracker:
             return None
 
         # Compute program dates
-        start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
-        end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        try:
+            start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        except ValueError:
+            print("⚠️ Invalid program dates")
+            return None
         today = datetime.now().date()
         total_days = (end_date - start_date).days + 1
 
@@ -581,8 +590,14 @@ class ProgressTracker:
 
     def calculate_weekly_progress(self, user_data):
         """Calculate progress for each week of the program"""
-        start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
-        end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        if not self.program or not self.program.start_date or not self.program.end_date:
+            return []
+
+        try:
+            start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        except ValueError:
+            return []
 
         # Find first Monday and last Sunday for complete weeks
         if start_date.weekday() == 0:
@@ -670,8 +685,15 @@ class ProgressTracker:
 
     def calculate_daily_status(self, user_data):
         """Calculate status for each day of the program"""
-        start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
-        end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        if not self.program or not self.program.start_date or not self.program.end_date:
+            return {}
+
+        try:
+            start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        except ValueError:
+            return {}
+
         today = datetime.now().date()
 
         daily_status = {}
@@ -712,11 +734,24 @@ class ProgressTracker:
 
     def calculate_detailed_breakdown(self, user_data):
         """Calculate detailed breakdown of points for each objective and task"""
+        if not self.program or not self.program.start_date or not self.program.end_date:
+            return {
+                "objectives": [],
+                "tasks": [],
+                "totals": {"current_points": 0, "total_points": 0},
+            }
+
         breakdown = {
             "objectives": [],
             "tasks": [],
             "totals": {"current_points": 0, "total_points": 0},
         }
+
+        try:
+            start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        except ValueError:
+            return breakdown
 
         # Calculate for objectives
         for obj in self.program.objectives:
@@ -728,8 +763,6 @@ class ProgressTracker:
             }
 
             # Calculate total possible points
-            start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
-            end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
             total_days = (end_date - start_date).days + 1
 
             if obj.frequency == "daily":

@@ -195,23 +195,37 @@ def get_dashboard_data():
     if not tracker.program:
         return jsonify({"error": "No program configured"}), 400
 
+    # Check if program has valid dates
+    if not tracker.program.start_date or not tracker.program.end_date:
+        return jsonify(
+            {
+                "global_progress": 0,
+                "expected_progress": 0,
+                "weekly_progress": [],
+                "daily_status": {},
+                "program_start": "",
+                "program_end": "",
+                "error": "Program dates not configured",
+            }
+        )
+
     user_data = tracker.get_user_data()
     progress = tracker.compute_progress(user_data)
 
-    # Calculate weekly progress
+    # Calculate weekly progress (now returns empty list if dates invalid)
     weekly_progress = tracker.calculate_weekly_progress(user_data)
 
-    # Calculate daily status
+    # Calculate daily status (now returns empty dict if dates invalid)
     daily_status = tracker.calculate_daily_status(user_data)
 
     return jsonify(
         {
             "global_progress": progress["current_progress"] if progress else 0,
             "expected_progress": progress["expected_progress"] if progress else 0,
-            "weekly_progress": weekly_progress,
-            "daily_status": daily_status,
-            "program_start": tracker.program.start_date,
-            "program_end": tracker.program.end_date,
+            "weekly_progress": weekly_progress if weekly_progress else [],
+            "daily_status": daily_status if daily_status else {},
+            "program_start": tracker.program.start_date or "",
+            "program_end": tracker.program.end_date or "",
         }
     )
 

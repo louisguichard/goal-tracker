@@ -33,96 +33,125 @@
         {% endif %}
         <div class="max-w-4xl mx-auto space-y-8 mt-8">
             <!-- Program Selection Section -->
-            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in">
-                <h2 class="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                    Program Selection
-                </h2>
+            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-primary/10 rounded-lg">
+                        <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-foreground">Program Selection</h2>
+                </div>
                 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Current Program Display -->
-                    <div class="lg:col-span-1">
-                        <label class="block text-sm font-medium text-foreground mb-2">Current Program</label>
-                        <div id="currentProgramDisplay" class="px-3 py-2 bg-secondary/50 border border-border rounded-md text-foreground">
-                            Loading...
+                <!-- Current Program Card -->
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Current Program</label>
+                    <div id="currentProgramDisplay" class="p-4 bg-primary/5 border-2 border-primary/20 rounded-lg text-foreground">
+                        <div class="flex items-center justify-center">
+                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-3"></div>
+                            <span class="text-muted-foreground">Loading...</span>
                         </div>
                     </div>
-                    
-                    <!-- Program Selector -->
-                    <div class="lg:col-span-1">
-                        <label for="programSelector" class="block text-sm font-medium text-foreground mb-2">Switch to Program</label>
-                        <div class="flex gap-2">
-                            <select id="programSelector" class="flex-1 px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Program Switcher -->
+                    <div class="space-y-4">
+                        <label for="programSelector" class="block text-sm font-semibold text-foreground uppercase tracking-wide">Switch to Program</label>
+                        <div class="space-y-3">
+                            <select id="programSelector" class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
                                 <option value="">Select a program...</option>
                                 <!-- Options will be populated by JS -->
                             </select>
-                            <button type="button" id="switchProgram" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors font-medium">
-                                Switch
+                            <button type="button" id="switchProgram" class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-semibold transform hover:scale-105">
+                                <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                </svg>
+                                Switch Program
                             </button>
                         </div>
                     </div>
                     
-                    <!-- New Program Creator -->
-                    <div class="lg:col-span-1">
-                        <label class="block text-sm font-medium text-foreground mb-2">Create New Program</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="newProgramName" placeholder="Program name" 
-                                   class="flex-1 px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
-                            <button type="button" id="createProgram" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-medium">
-                                Create
+                    <!-- Program Creator -->
+                    <div class="space-y-4">
+                        <label class="block text-sm font-semibold text-foreground uppercase tracking-wide">Create New Program</label>
+                        <div class="space-y-3">
+                            <input type="text" id="newProgramName" placeholder="Enter program name..." 
+                                   class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
+                            <button type="button" id="createProgram" class="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 font-semibold transform hover:scale-105">
+                                <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Create Program
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Program List for Mobile -->
-                <div id="programList" class="mt-6 lg:hidden">
-                    <h3 class="text-lg font-medium text-foreground mb-3">Available Programs</h3>
-                    <div id="programCards" class="space-y-2">
+                <!-- Available Programs List -->
+                <div id="programList" class="mt-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-foreground">Available Programs</h3>
+                        <span id="programCount" class="text-sm text-muted-foreground"></span>
+                    </div>
+                    <div id="programCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- Program cards will be populated by JS -->
                     </div>
                 </div>
             </div>
 
             <!-- Program Information -->
-            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in">
-                <h2 class="text-xl font-semibold text-foreground mb-4">Program Information</h2>
-                <form id="programForm" class="space-y-4">
+            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-blue-500/10 rounded-lg">
+                        <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-foreground">Program Information</h2>
+                </div>
+                
+                <form id="programForm" class="space-y-6">
                     <div>
-                        <label for="programName" class="block text-sm font-medium text-foreground mb-2">Program Name</label>
+                        <label for="programName" class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Program Name</label>
                         <input type="text" id="programName" name="programName" required 
                                value="{% if program %}{{ program.name }}{% endif %}"
-                               class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                               class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium text-lg"
                                placeholder="e.g., Summer Fitness Challenge">
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="startDate" class="block text-sm font-medium text-foreground mb-2">Start Date</label>
+                            <label for="startDate" class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Start Date</label>
                             <input type="date" id="startDate" name="startDate" required
                                    value="{% if program %}{{ program.start_date }}{% else %}{{ today_str }}{% endif %}"
-                                   class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                                   class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
                         </div>
                         <div>
-                            <label for="endDate" class="block text-sm font-medium text-foreground mb-2">End Date</label>
+                            <label for="endDate" class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">End Date</label>
                             <input type="date" id="endDate" name="endDate" required
                                    value="{% if program %}{{ program.end_date }}{% endif %}"
-                                   class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                                   class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
                         </div>
                     </div>
                 </form>
             </div>
 
             <!-- Objectives Section -->
-            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm" style="animation-delay: 0.1s;">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-foreground">Objectives</h2>
-                    <button type="button" id="addObjective" class="inline-flex items-center px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring transition-colors text-sm font-medium">
-                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-green-500/10 rounded-lg">
+                            <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-foreground">Objectives</h2>
+                    </div>
+                    <button type="button" id="addObjective" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 font-semibold transform hover:scale-105">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add
+                        Add Objective
                     </button>
                 </div>
                 
@@ -186,14 +215,21 @@
             </div>
 
             <!-- Tasks Section -->
-            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm" style="animation-delay: 0.2s;">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-foreground">Tasks</h2>
-                    <button type="button" id="addTask" class="inline-flex items-center px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring transition-colors text-sm font-medium">
-                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-orange-500/10 rounded-lg">
+                            <svg class="h-6 w-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-foreground">Tasks</h2>
+                    </div>
+                    <button type="button" id="addTask" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 font-semibold transform hover:scale-105">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add
+                        Add Task
                     </button>
                 </div>
                 
@@ -231,22 +267,38 @@
             </div>
 
             <!-- Save Section -->
-            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.3s;">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-foreground">Save Your Program</h3>
-                        <p class="text-muted-foreground mt-1">Make sure to save your changes to start tracking your progress.</p>
-                        <a href="/progress-explanation" class="text-sm text-primary hover:text-primary/80 underline mt-2 inline-block">
-                            📊 How is progress calculated?
+            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm" style="animation-delay: 0.3s;">
+                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-purple-500/10 rounded-lg">
+                                <svg class="h-6 w-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-foreground">Save Your Program</h3>
+                        </div>
+                        <p class="text-muted-foreground text-lg mb-4">Make sure to save your changes to start tracking your progress and unlock the full power of Goal Tracker.</p>
+                        <a href="/progress-explanation" class="inline-flex items-center text-primary hover:text-primary/80 transition-colors font-medium">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 112-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            How is progress calculated?
                         </a>
                     </div>
-                    <div class="flex gap-3">
+                    <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
                         {% if program %}
-                        <a href="/" class="px-6 py-3 border border-border text-foreground bg-background hover:bg-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-colors font-medium">
-                            ← Dashboard
+                        <a href="/" class="px-8 py-4 border-2 border-border text-foreground bg-background hover:bg-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200 font-semibold text-center transform hover:scale-105 shadow-md hover:shadow-lg">
+                            <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Dashboard
                         </a>
                         {% endif %}
-                        <button type="button" id="saveProgram" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors font-medium">
+                        <button type="button" id="saveProgram" class="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 font-bold text-lg transform hover:scale-105">
+                            <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                            </svg>
                             Save Program
                         </button>
                     </div>
@@ -429,7 +481,8 @@ function addObjectiveItem(objective = null) {
                 <!-- Type toggle -->
                 <select class="objective-type text-xs px-2 py-1 border-0 bg-secondary/80 text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="checkbox" ${objective && objective.type === 'checkbox' ? 'selected' : ''}>✓</option>
-                    <option value="cumulative" ${objective && objective.type === 'cumulative' ? 'selected' : ''}>8</option>
+                    <option value="cumulative" ${objective && objective.type === 'cumulative' ? 'selected' : ''}>↗</option>
+                    <option value="latest" ${objective && objective.type === 'latest' ? 'selected' : ''}>#</option>
                 </select>
                 
                 <!-- Target value (compact) -->
@@ -577,23 +630,30 @@ function loadCurrentProgram() {
             const display = document.getElementById('currentProgramDisplay');
             if (data.current_program) {
                 display.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="font-medium">${data.current_program.name}</div>
-                            <div class="text-sm text-muted-foreground">ID: ${data.current_program.id}</div>
+                    <div class="flex items-center justify-between p-1">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-bold text-lg text-foreground">${data.current_program.name}</div>
+                                <div class="text-sm text-muted-foreground">ID: ${data.current_program.id}</div>
+                            </div>
                         </div>
-                        <div class="text-xs px-2 py-1 rounded-md ${data.current_program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
-                            ${data.current_program.has_data ? 'Has Data' : 'No Data'}
+                        <div class="text-xs px-3 py-1 rounded-full font-medium ${data.current_program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
+                            ${data.current_program.has_data ? '✓ Has Data' : '⚠ No Data'}
                         </div>
                     </div>
                 `;
             } else {
-                display.innerHTML = '<span class="text-muted-foreground">No program selected</span>';
+                display.innerHTML = '<div class="text-center p-4"><span class="text-muted-foreground">No program selected</span></div>';
             }
         })
         .catch(error => {
             console.error('Error loading current program:', error);
-            document.getElementById('currentProgramDisplay').innerHTML = '<span class="text-destructive">Error loading program</span>';
+            document.getElementById('currentProgramDisplay').innerHTML = '<div class="text-center p-4"><span class="text-destructive">Error loading program</span></div>';
         });
 }
 
@@ -603,42 +663,81 @@ function loadAvailablePrograms() {
         .then(programs => {
             const selector = document.getElementById('programSelector');
             const programCards = document.getElementById('programCards');
+            const programCount = document.getElementById('programCount');
             
-            // Clear existing options
+            // Clear existing options and cards
             selector.innerHTML = '<option value="">Select a program...</option>';
             programCards.innerHTML = '';
             
+            // Update program count
+            programCount.textContent = `${programs.length} program${programs.length !== 1 ? 's' : ''}`;
+            
+            let currentProgramId = null;
+            
             programs.forEach(program => {
-                // Add to selector (exclude current program)
-                if (!program.is_current) {
-                    const option = document.createElement('option');
-                    option.value = program.id;
-                    option.textContent = `${program.name} ${program.has_data ? '(has data)' : '(no data)'}`;
-                    selector.appendChild(option);
+                // Add ALL programs to selector (including current one)
+                const option = document.createElement('option');
+                option.value = program.id;
+                option.textContent = `${program.name} ${program.has_data ? '(has data)' : '(no data)'} ${program.is_current ? '(current)' : ''}`;
+                if (program.is_current) {
+                    option.selected = true;
+                    currentProgramId = program.id;
                 }
+                selector.appendChild(option);
                 
-                // Add to mobile cards
+                // Add to program cards
                 const card = document.createElement('div');
-                card.className = `p-3 border border-border rounded-md ${program.is_current ? 'bg-primary/10 border-primary/30' : 'bg-background'}`;
+                card.className = `group p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:scale-105 ${
+                    program.is_current 
+                        ? 'bg-primary/5 border-primary/40 shadow-md' 
+                        : 'bg-background border-border hover:border-primary/30'
+                }`;
                 card.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="font-medium text-foreground">${program.name}</div>
-                            <div class="text-sm text-muted-foreground">ID: ${program.id}</div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="text-xs px-2 py-1 rounded-md ${program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
-                                ${program.has_data ? 'Has Data' : 'No Data'}
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 ${program.is_current ? 'bg-primary/20' : 'bg-muted'} rounded-lg flex items-center justify-center">
+                                <svg class="h-4 w-4 ${program.is_current ? 'text-primary' : 'text-muted-foreground'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
                             </div>
-                            ${program.is_current ? 
-                                '<span class="text-xs px-2 py-1 bg-primary text-primary-foreground rounded-md">Current</span>' : 
-                                `<button onclick="switchToProgram('${program.id}')" class="text-xs px-2 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">Switch</button>`
-                            }
+                            <div>
+                                <div class="font-bold text-foreground text-lg">${program.name}</div>
+                                <div class="text-sm text-muted-foreground">ID: ${program.id}</div>
+                            </div>
                         </div>
+                        ${program.is_current ? 
+                            '<div class="bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-bold">CURRENT</div>' : 
+                            ''
+                        }
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs px-3 py-1 rounded-full font-medium ${program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
+                            ${program.has_data ? '✓ Has Data' : '⚠ No Data'}
+                        </div>
+                        ${!program.is_current ? 
+                            `<button onclick="switchToProgram('${program.id}')" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-xs font-medium transform hover:scale-105">
+                                Switch
+                            </button>` : 
+                            '<div class="text-xs text-primary font-medium">✓ Active</div>'
+                        }
                     </div>
                 `;
                 programCards.appendChild(card);
             });
+            
+            // Hide switch button if current program is selected
+            const switchButton = document.getElementById('switchProgram');
+            const updateSwitchButton = () => {
+                const selectedValue = selector.value;
+                const isCurrentSelected = selectedValue === currentProgramId;
+                switchButton.style.display = (selectedValue && !isCurrentSelected) ? 'block' : 'none';
+            };
+            
+            // Initial update
+            updateSwitchButton();
+            
+            // Add event listener to selector
+            selector.addEventListener('change', updateSwitchButton);
         })
         .catch(error => {
             console.error('Error loading programs:', error);
