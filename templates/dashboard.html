@@ -3,13 +3,11 @@
 {% block title %}Dashboard - Goal Tracker{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-background text-foreground flex flex-col">
-
-
-    <!-- Main content - Full width, uses remaining height -->
-    <main class="flex-1 w-[80%] mx-auto px-6 md:px-8 py-2 space-y-4">
-        <!-- Program Progress Bar with Grid Animation - Same width as sections below -->
-        <div class="bg-card p-8 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.2s;">
+<div class="h-[calc(100vh-4rem)] bg-background text-foreground flex flex-col overflow-hidden">
+    <!-- Main content - Takes exact remaining height after nav (4rem) -->
+    <main class="flex-1 w-[80%] mx-auto px-6 md:px-8 py-2 flex flex-col gap-4 overflow-hidden">
+        <!-- Program Progress Bar with Grid Animation - Fixed height -->
+        <div class="bg-card p-8 rounded-lg shadow-lg animate-fade-in flex-shrink-0" style="animation-delay: 0.2s;">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-foreground">Program Progress</h2>
                 <div>
@@ -29,22 +27,26 @@
             </div>
         </div>
 
-        <!-- Weekly Progress and Calendar Grid - Using calc for proper fit -->
-        <div class="grid grid-cols-2 gap-6" id="mainGrid">
-            <!-- Weekly Progress Bars - Takes 1/2 of width -->
-            <div class="col-span-1" id="weeklySection">
-                <div class="bg-card p-4 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.4s;">
-                    <h2 class="text-lg font-semibold mb-3 text-foreground">Weekly Breakdown</h2>
-                    <div class="space-y-2" id="weeklyBars">
-                        <!-- Weekly bars will be populated by JavaScript -->
+        <!-- Weekly Progress and Calendar Grid - Takes remaining height -->
+        <div class="grid grid-cols-2 gap-6 flex-1 min-h-0 mb-8" id="mainGrid">
+            <!-- Weekly Progress Bars - Takes 1/2 of width with scrolling when needed -->
+            <div class="col-span-1 flex flex-col min-h-0" id="weeklySection">
+                <div class="bg-card rounded-lg shadow-lg animate-fade-in flex flex-col h-full" style="animation-delay: 0.4s;">
+                    <div class="p-4 flex-shrink-0">
+                        <h2 class="text-lg font-semibold text-foreground">Weekly Breakdown</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto px-4 pb-4">
+                        <div class="space-y-2" id="weeklyBars">
+                            <!-- Weekly bars will be populated by JavaScript -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Progress Calendar - Takes 1/2 of width -->
-            <div class="col-span-1" id="calendarSection">
-                <div class="bg-card p-4 rounded-lg shadow-lg animate-fade-in" style="animation-delay: 0.4s;">
-                    <div class="flex items-center justify-between mb-2">
+            <!-- Progress Calendar - Takes 1/2 of width, no scrolling -->
+            <div class="col-span-1 flex flex-col min-h-0" id="calendarSection">
+                <div class="bg-card p-4 rounded-lg shadow-lg animate-fade-in flex flex-col h-full" style="animation-delay: 0.4s;">
+                    <div class="flex items-center justify-between mb-2 flex-shrink-0">
                         <h2 class="text-lg font-semibold text-foreground">Daily Activity</h2>
                         <div class="flex items-center gap-2" id="calendarNavigation" style="display: none;">
                             <button id="prevMonth" class="p-1.5 rounded hover:bg-accent transition-colors">
@@ -60,11 +62,13 @@
                             </button>
                         </div>
                     </div>
-                    <div id="progressCalendar" class="space-y-1.5">
-                        <!-- Calendar will be populated by JavaScript -->
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div id="progressCalendar" class="space-y-1.5">
+                            <!-- Calendar will be populated by JavaScript -->
+                        </div>
                     </div>
                     <!-- Legend -->
-                    <div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 p-1.5 text-xs text-muted-foreground pt-2 border-t border-border mt-2">
+                    <div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 p-1.5 text-xs text-muted-foreground pt-2 border-t border-border mt-2 flex-shrink-0">
                         <div class="flex items-center gap-1.5">
                             <svg class="h-3 w-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -284,8 +288,9 @@ function updateProgressCalendar(dailyStatus) {
     let programStartDate, programEndDate;
     
     if (dashboardData.program_start && dashboardData.program_end) {
-        programStartDate = new Date(dashboardData.program_start);
-        programEndDate = new Date(dashboardData.program_end);
+        // Parse dates ensuring we use the local timezone to avoid off-by-one day issues
+        programStartDate = new Date(dashboardData.program_start + 'T00:00:00');
+        programEndDate = new Date(dashboardData.program_end + 'T23:59:59');
         // Don't show future dates beyond today for status, but show the program period
     } else {
         // Fallback to 4-week period if no program dates
@@ -373,7 +378,11 @@ function displayMonths(monthsToShow, dailyStatus, programStartDate, programEndDa
             const status = dailyStatus[dateStr] || '';
             const isToday = date.toDateString() === today.toDateString();
             const isFuture = date > today;
-            const isInProgramPeriod = date >= programStartDate && date <= programEndDate;
+            
+            // Compare dates using date strings to avoid timezone issues
+            const programStartStr = programStartDate.toISOString().split('T')[0];
+            const programEndStr = programEndDate.toISOString().split('T')[0];
+            const isInProgramPeriod = dateStr >= programStartStr && dateStr <= programEndStr;
             
             let dayContent = day;
             let statusClass = '';
