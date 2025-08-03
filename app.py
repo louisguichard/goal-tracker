@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from tracker import ProgressTracker
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 import glob
 from werkzeug.utils import secure_filename
@@ -90,7 +90,8 @@ def todo():
 def setup():
     """Program setup page"""
     tracker.load_program()
-    return render_template("setup.html", program=tracker.program)
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    return render_template("setup.html", program=tracker.program, today_str=today_str)
 
 
 @app.route("/progress-explanation")
@@ -103,7 +104,7 @@ def progress_explanation():
     user_data = tracker.get_user_data()
 
     # Calculate detailed breakdown
-    breakdown = calculate_detailed_breakdown(tracker.program, user_data)
+    breakdown = tracker.calculate_detailed_breakdown(user_data)
     progress = tracker.compute_progress(user_data)
 
     return render_template(
@@ -198,10 +199,10 @@ def get_dashboard_data():
     progress = tracker.compute_progress(user_data)
 
     # Calculate weekly progress
-    weekly_progress = calculate_weekly_progress(tracker.program, user_data)
+    weekly_progress = tracker.calculate_weekly_progress(user_data)
 
     # Calculate daily status
-    daily_status = calculate_daily_status(tracker.program, user_data)
+    daily_status = tracker.calculate_daily_status(user_data)
 
     return jsonify(
         {
@@ -371,235 +372,6 @@ def get_current_program():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-def calculate_weekly_progress(program, user_data):
-    """Calculate progress for each week of the program"""
-    start_date = datetime.strptime(program.start_date, "%Y-%m-%d").date()
-    end_date = datetime.strptime(program.end_date, "%Y-%m-%d").date()
-
-    # Find first Monday and last Sunday for complete weeks
-    if start_date.weekday() == 0:
-        first_monday = start_date
-    else:
-        first_monday = start_date + timedelta(days=7 - start_date.weekday())
-
-    if end_date.weekday() == 6:
-        last_sunday = end_date
-    else:
-        last_sunday = end_date - timedelta(days=end_date.weekday() + 1)
-
-    # Calculate number of weeks
-    if last_sunday < first_monday:
-        # Program is shorter than a week
-        return [{"week": "Week 1", "progress": 0}]
-
-    num_weeks = ((last_sunday - first_monday).days + 1) // 7
-
-    weekly_data = []
-    for week_num in range(num_weeks):
-        week_start = first_monday + timedelta(weeks=week_num)
-        week_end = week_start + timedelta(days=6)
-
-        # Calculate progress for this week
-        week_progress = calculate_week_progress(
-            program, user_data, week_start, week_end
-        )
-
-        weekly_data.append(
-            {"week": f"Week {week_num + 1}", "progress": round(week_progress, 1)}
-        )
-
-    return weekly_data
-
-
-def calculate_week_progress(program, user_data, week_start, week_end):
-    """Calculate progress for a specific week"""
-    total_points = 0
-    earned_points = 0
-
-    # Calculate points from daily objectives
-    for obj in program.objectives:
-        if obj.frequency == "daily":
-            # Each day in the week can earn points
-            for day_offset in range(7):
-                current_date = week_start + timedelta(days=day_offset)
-                date_str = current_date.strftime("%Y-%m-%d")
-
-                total_points += obj.weight
-
-                if date_str in user_data and obj.id in user_data[date_str]:
-                    if user_data[date_str][obj.id]["value"]:
-                        earned_points += obj.weight
-
-    # Calculate points from weekly objectives
-    for obj in program.objectives:
-        if obj.frequency == "weekly":
-            total_points += obj.weight
-
-            # Count achievements in this week
-            week_achievements = 0
-            for day_offset in range(7):
-                current_date = week_start + timedelta(days=day_offset)
-                date_str = current_date.strftime("%Y-%m-%d")
-
-                if date_str in user_data and obj.id in user_data[date_str]:
-                    if obj.type == "checkbox" and user_data[date_str][obj.id]["value"]:
-                        week_achievements += 1
-                    elif obj.type == "cumulative":
-                        week_achievements += user_data[date_str][obj.id]["value"]
-
-            # Apply scoring
-            if obj.scoring == "binary":
-                if week_achievements >= obj.target_value:
-                    earned_points += obj.weight
-            elif obj.scoring == "proportional":
-                earned_points += obj.weight * min(
-                    week_achievements / obj.target_value, 1.0
-                )
-
-    return (earned_points / total_points * 100) if total_points > 0 else 0
-
-
-def calculate_daily_status(program, user_data):
-    """Calculate status for each day of the program"""
-    start_date = datetime.strptime(program.start_date, "%Y-%m-%d").date()
-    end_date = datetime.strptime(program.end_date, "%Y-%m-%d").date()
-    today = datetime.now().date()
-
-    daily_status = {}
-
-    current_date = start_date
-    while current_date <= min(end_date, today):
-        date_str = current_date.strftime("%Y-%m-%d")
-
-        # Calculate daily objectives completion
-        daily_objectives = [
-            obj for obj in program.objectives if obj.frequency == "daily"
-        ]
-
-        if not daily_objectives:
-            # No daily objectives, skip
-            current_date += timedelta(days=1)
-            continue
-
-        completed = 0
-        total = len(daily_objectives)
-
-        for obj in daily_objectives:
-            if date_str in user_data and obj.id in user_data[date_str]:
-                if user_data[date_str][obj.id]["value"]:
-                    completed += 1
-
-        # Determine status
-        if completed == total:
-            daily_status[date_str] = "✅"  # Completed
-        elif completed > 0:
-            daily_status[date_str] = "⚠️"  # Partial
-        else:
-            daily_status[date_str] = "❌"  # Missed
-
-        current_date += timedelta(days=1)
-
-    return daily_status
-
-
-def calculate_detailed_breakdown(program, user_data):
-    """Calculate detailed breakdown of points for each objective and task"""
-    breakdown = {
-        "objectives": [],
-        "tasks": [],
-        "totals": {"current_points": 0, "total_points": 0},
-    }
-
-    # Calculate for objectives
-    for obj in program.objectives:
-        obj_breakdown = {
-            "objective": obj,
-            "current_points": 0,
-            "total_points": 0,
-            "daily_breakdown": {},
-        }
-
-        # Calculate total possible points
-        start_date = datetime.strptime(program.start_date, "%Y-%m-%d").date()
-        end_date = datetime.strptime(program.end_date, "%Y-%m-%d").date()
-        total_days = (end_date - start_date).days + 1
-
-        if obj.frequency == "daily":
-            obj_breakdown["total_points"] = obj.weight * total_days
-        elif obj.frequency == "weekly":
-            obj_breakdown["total_points"] = obj.weight * (total_days // 7)
-        elif obj.frequency == "program":
-            obj_breakdown["total_points"] = obj.weight
-
-        # Calculate current points using tracker's method
-        obj_breakdown["current_points"] = calculate_objective_points_detailed(
-            obj, user_data, program
-        )
-
-        # Calculate daily breakdown for visualization
-        current_date = start_date
-        while current_date <= end_date:
-            date_str = current_date.strftime("%Y-%m-%d")
-            day_points = 0
-
-            if date_str in user_data and obj.id in user_data[date_str]:
-                if obj.frequency == "daily" and user_data[date_str][obj.id]["value"]:
-                    day_points = obj.weight
-
-            obj_breakdown["daily_breakdown"][date_str] = {
-                "points": day_points,
-                "value": user_data.get(date_str, {}).get(obj.id, {}).get("value", 0),
-            }
-            current_date += timedelta(days=1)
-
-        breakdown["objectives"].append(obj_breakdown)
-        breakdown["totals"]["current_points"] += obj_breakdown["current_points"]
-        breakdown["totals"]["total_points"] += obj_breakdown["total_points"]
-
-    # Calculate for tasks
-    for task in program.tasks:
-        task_breakdown = {
-            "task": task,
-            "current_points": 0,
-            "total_points": task.weight,
-            "completed": False,
-            "completion_date": None,
-        }
-
-        # Check if task is completed
-        for date_str in user_data:
-            if task.id in user_data[date_str] and user_data[date_str][task.id]["value"]:
-                task_breakdown["current_points"] = task.weight
-                task_breakdown["completed"] = True
-                task_breakdown["completion_date"] = date_str
-                break
-
-        breakdown["tasks"].append(task_breakdown)
-        breakdown["totals"]["current_points"] += task_breakdown["current_points"]
-        breakdown["totals"]["total_points"] += task_breakdown["total_points"]
-
-    return breakdown
-
-
-def calculate_objective_points_detailed(objective, user_data, program):
-    """Calculate points for a specific objective (simplified version for breakdown)"""
-    if objective.frequency == "daily":
-        total = 0
-        for date in user_data:
-            if objective.id in user_data[date]:
-                if user_data[date][objective.id]["value"]:
-                    total += objective.weight
-        return total
-    elif objective.frequency == "weekly":
-        # Simplified weekly calculation for now
-        return 0  # TODO: Implement detailed weekly calculation
-    elif objective.frequency == "program":
-        # Simplified program calculation for now
-        return 0  # TODO: Implement detailed program calculation
-    else:
-        return 0
 
 
 if __name__ == "__main__":

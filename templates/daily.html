@@ -166,10 +166,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const dateDisplay = document.getElementById('dateDisplay');
     
+    const englishMonths = [
+        'January', 'February', 'March', 'April', 'May', 'June', 
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const englishWeekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
     if (selectedDate.toDateString() === today.toDateString()) {
         dateDisplay.textContent = 'Today';
     } else if (selectedDate.toDateString() === yesterday.toDateString()) {
         dateDisplay.textContent = 'Yesterday';
+    } else {
+        const month = englishMonths[selectedDate.getUTCMonth()];
+        const day = selectedDate.getUTCDate();
+        const year = selectedDate.getUTCFullYear();
+        const weekday = englishWeekdays[selectedDate.getUTCDay()];
+        dateDisplay.textContent = `${weekday}, ${month} ${day}, ${year}`;
     }
 });
 
@@ -212,7 +224,9 @@ function saveProgress(event) {
     })
     .then(response => response.json())
     .then(data => {
-        if (!data.success) {
+        if (data.success) {
+            showAlert('Saved!');
+        } else {
             showAlert('Error saving progress', 'error');
         }
     })
