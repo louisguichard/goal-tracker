@@ -471,10 +471,9 @@ class ProgressTracker:
             print("⚠️ No program loaded")
             return None
 
-        # Check if user data is loaded
+        # If user data is not available, initialize to empty dict
         if not user_data:
-            print("⚠️ No user data loaded")
-            return None
+            user_data = {}
 
         # Compute program dates
         try:
