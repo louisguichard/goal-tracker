@@ -27,6 +27,7 @@ def index():
         program=tracker.program,
         progress=progress,
         user_data=user_data,
+        simulated_today=datetime.now().strftime("%Y-%m-%d"),
     )
 
 
@@ -440,4 +441,19 @@ def get_current_program():
 
 
 if __name__ == "__main__":
+    import sys
+
+    if "--demo" in sys.argv:
+        from demo import create_demo_program
+
+        program_id = create_demo_program()
+        tracker.select_program(program_id)
+        # This will set the "today" for the demo
+        from freezegun import freeze_time
+        from datetime import date
+
+        demo_today = date(2025, 12, 15)
+        freezer = freeze_time(demo_today)
+        freezer.start()
+
     app.run(debug=True)

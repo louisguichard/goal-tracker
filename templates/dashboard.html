@@ -282,7 +282,8 @@ function updateWeeklyProgress(weeklyData) {
 
 function updateProgressCalendar(dailyStatus) {
     const calendar = document.getElementById('progressCalendar');
-    const today = new Date();
+    const simulatedTodayStr = '{{ simulated_today }}';
+    const today = new Date(simulatedTodayStr + 'T00:00:00');
     
     // Use actual program dates from dashboardData
     let programStartDate, programEndDate;
@@ -291,7 +292,6 @@ function updateProgressCalendar(dailyStatus) {
         // Parse dates ensuring we use the local timezone to avoid off-by-one day issues
         programStartDate = new Date(dashboardData.program_start + 'T00:00:00');
         programEndDate = new Date(dashboardData.program_end + 'T23:59:59');
-        // Don't show future dates beyond today for status, but show the program period
     } else {
         // Fallback to 4-week period if no program dates
         programStartDate = new Date(today);
@@ -307,8 +307,6 @@ function updateProgressCalendar(dailyStatus) {
     const navigation = document.getElementById('calendarNavigation');
     const monthYearDisplay = document.getElementById('currentMonthYear');
     
-    // The grid is now fixed with grid-cols-5, so no need to adjust columns
-    // Just handle navigation based on number of months
     if (totalMonths <= 1) {
         navigation.style.display = 'none';
         displayMonths(programMonths, dailyStatus, programStartDate, programEndDate, today);
@@ -329,7 +327,8 @@ function updateProgressCalendar(dailyStatus) {
         
         // Update button states
         document.getElementById('prevMonth').disabled = currentCalendarView === 0;
-        document.getElementById('nextMonth').disabled = currentCalendarView >= totalMonths - 2;
+        document.getElementById('nextMonth').disabled = currentCalendarV
+iew >= totalMonths - 2;
     }
 }
 
@@ -344,49 +343,41 @@ function displayMonths(monthsToShow, dailyStatus, programStartDate, programEndDa
     const calendar = document.getElementById('progressCalendar');
     let calendarHTML = '';
     
-    // If we have multiple months, display them side by side
     if (monthsToShow.length > 1) {
         calendarHTML += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
     }
     
     monthsToShow.forEach((monthData, monthIndex) => {
-        // Month container
         calendarHTML += `<div class="month-container">`;
         
-        // Month header
         calendarHTML += `
             <div class="text-center mb-2">
                 <h3 class="font-medium text-foreground text-base">${monthData.name} ${monthData.year}</h3>
             </div>
         `;
         
-        // Day headers - centered
         calendarHTML += '<div class="grid grid-cols-7 gap-1 mb-2">';
         englishDays.forEach(day => {
             calendarHTML += `<div class="text-center text-sm font-medium text-muted-foreground p-1 flex items-center justify-center">${day}</div>`;
         });
         calendarHTML += '</div>';
         
-        // Calendar grid
         calendarHTML += '<div class="grid grid-cols-7 gap-1">';
         
-        // Empty cells for days before month starts
         const firstDay = new Date(monthData.year, monthData.month, 1);
-        const startDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
+        const startDayOfWeek = (firstDay.getDay() + 6) % 7;
         for (let i = 0; i < startDayOfWeek; i++) {
             calendarHTML += '<div class="h-8 w-8"></div>';
         }
         
-        // Days of the month
         const daysInMonth = new Date(monthData.year, monthData.month + 1, 0).getDate();
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(monthData.year, monthData.month, day);
             const dateStr = toLocalYMD(date);
-            const status = dailyStatus[dateStr] || '';
+            let status = dailyStatus[dateStr] || '';
             const isToday = date.toDateString() === today.toDateString();
             const isFuture = date > today;
             
-            // Compare dates using date strings to avoid timezone issues
             const programStartStr = toLocalYMD(programStartDate);
             const programEndStr = toLocalYMD(programEndDate);
             const isInProgramPeriod = dateStr >= programStartStr && dateStr <= programEndStr;
@@ -396,32 +387,26 @@ function displayMonths(monthsToShow, dailyStatus, programStartDate, programEndDa
             let todayClass = isToday ? 'ring-1 ring-primary/80' : '';
             
             if (!isInProgramPeriod) {
-                // Days outside program period: show day number in very muted color
                 dayContent = day;
                 statusClass = 'text-muted-foreground/30';
             } else if (isFuture) {
-                // Future days within program period: show in darker color
                 dayContent = day;
                 statusClass = 'text-foreground/90 font-medium';
             } else {
-                // Past/today days in program period: show day number in black or status icons
+                if (!status) {
+                    status = '❌'; // Mark past days with no data as missed
+                }
+
                 if (status === '✅') {
-                    dayContent = `<svg class="h-3 w-3 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>`;
+                    dayContent = `<svg class="h-3 w-3 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
                     statusClass = 'bg-green-50 dark:bg-green-900/20';
                 } else if (status === '⚠️') {
-                    dayContent = `<svg class="h-3 w-3 text-yellow-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                    </svg>`;
+                    dayContent = `<svg class="h-3 w-3 text-yellow-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>`;
                     statusClass = 'bg-yellow-50 dark:bg-yellow-900/20';
                 } else if (status === '❌') {
-                    dayContent = `<svg class="h-3 w-3 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>`;
+                    dayContent = `<svg class="h-3 w-3 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
                     statusClass = 'bg-red-50 dark:bg-red-900/20';
                 } else {
-                    // No status data but in program period (past/today) - show day number in black
                     dayContent = day;
                     statusClass = 'text-foreground';
                 }
@@ -434,10 +419,9 @@ function displayMonths(monthsToShow, dailyStatus, programStartDate, programEndDa
             `;
         }
         
-        calendarHTML += '</div></div>'; // Close calendar grid and month container
+        calendarHTML += '</div></div>';
     });
     
-    // Close the grid container if we have multiple months
     if (monthsToShow.length > 1) {
         calendarHTML += '</div>';
     }
