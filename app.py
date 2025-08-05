@@ -140,6 +140,7 @@ def save_program():
                 "weight": obj_data.get("weight", weight),
                 "start_value": obj_data.get("start_value", 0),
                 "unit": obj_data.get("unit", ""),
+                "importance": obj_data.get("importance", "bien"),
             }
         )
 

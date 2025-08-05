@@ -233,6 +233,14 @@
                                         <option value="binary" {% if objective.scoring == 'binary' %}selected{% endif %}>All</option>
                                     </select>
                                     
+                                    <!-- Importance -->
+                                    <select class="objective-importance text-xs px-2 py-1 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-ring
+                                        {% if objective.importance == 'indispensable' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300{% elif objective.importance == 'important' %}bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300{% else %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300{% endif %}">
+                                        <option value="indispensable" {% if objective.importance == 'indispensable' %}selected{% endif %}>🔴</option>
+                                        <option value="important" {% if objective.importance == 'important' %}selected{% endif %}>🟠</option>
+                                        <option value="bien" {% if objective.importance == 'bien' or not objective.importance %}selected{% endif %}>🟢</option>
+                                    </select>
+                                    
                                     <!-- Remove button -->
                                     <button type="button" class="remove-objective text-muted-foreground hover:text-destructive p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,6 +425,16 @@ function attachObjectiveEventListeners(objectiveElement) {
         e.target.closest('.objective-item').remove();
         updateEmptyStates();
     });
+    
+    // Add event listener for importance changes
+    const importanceSelect = objectiveElement.querySelector('.objective-importance');
+    if (importanceSelect) {
+        importanceSelect.addEventListener('change', e => {
+            updateImportanceColors(e.target);
+        });
+        // Set initial colors
+        updateImportanceColors(importanceSelect);
+    }
 }
 
 function attachTaskEventListeners(taskElement) {
@@ -461,7 +479,8 @@ function getCurrentConfiguration() {
             scoring: item.querySelector('.objective-scoring').value,
             target_value: parseFloat(item.querySelector('.objective-target').value) || 1,
             unit: "",
-            start_value: 0
+            start_value: 0,
+            importance: item.querySelector('.objective-importance').value
         } : null;
     }).filter(Boolean);
     
@@ -539,6 +558,13 @@ function addObjectiveItem(objective = null) {
                     <option value="binary" ${objective && objective.scoring === 'binary' ? 'selected' : ''}>All</option>
                 </select>
                 
+                <!-- Importance -->
+                <select class="objective-importance text-xs px-2 py-1 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-ring ${getImportanceClasses(objective ? objective.importance : 'bien')}">
+                    <option value="indispensable" ${objective && objective.importance === 'indispensable' ? 'selected' : ''}>🔴</option>
+                    <option value="important" ${objective && objective.importance === 'important' ? 'selected' : ''}>🟠</option>
+                    <option value="bien" ${!objective || !objective.importance || objective.importance === 'bien' ? 'selected' : ''}>🟢</option>
+                </select>
+                
                 <!-- Remove button -->
                 <button type="button" class="remove-objective text-muted-foreground hover:text-destructive p-1 rounded opacity-0 group-hover:opacity-100 transition-all">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -575,6 +601,28 @@ function addTaskItem(task = null) {
     `;
     tasksList.appendChild(div);
     attachTaskEventListeners(div);
+}
+
+function getImportanceClasses(importance) {
+    switch(importance) {
+        case 'indispensable':
+            return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+        case 'important':
+            return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300';
+        default:
+            return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300';
+    }
+}
+
+function updateImportanceColors(selectElement) {
+    const importance = selectElement.value;
+    const classes = getImportanceClasses(importance);
+    
+    // Remove all importance classes
+    selectElement.className = selectElement.className.replace(/bg-(red|orange|green)-\d+.*?text-(red|orange|green)-\d+[^\s]*/g, '');
+    
+    // Add new classes
+    selectElement.className += ' ' + classes;
 }
 
 function saveProgram() {

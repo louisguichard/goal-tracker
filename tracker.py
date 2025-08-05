@@ -16,6 +16,7 @@ class Objective:
     target_value: int
     unit: str = ""
     weight: int = 1
+    importance: str = "bien"  # 'indispensable', 'important', 'bien'
 
 
 @dataclass
@@ -295,6 +296,11 @@ class ProgressTracker:
             writer.writeheader()
             writer.writerows(existing_data)
 
+    def _get_importance_multiplier(self, importance):
+        """Get the point multiplier for importance level"""
+        multipliers = {"indispensable": 3, "important": 2, "bien": 1}
+        return multipliers.get(importance, 1)
+
     def _compute_objective_points(self, objective, user_data):
         """compute points for a specific objective based on type"""
         if objective.frequency == "daily":
@@ -322,7 +328,11 @@ class ProgressTracker:
                             f"⚠️ Only 'checkbox' type has been implemented for daily objectives. Objective {objective.id} is of type '{objective.type}'"
                         )
                         return 0
-        return total
+        # Apply importance multiplier
+        multiplier = self._get_importance_multiplier(
+            getattr(objective, "importance", "bien")
+        )
+        return total * multiplier
 
     def _get_weekly_boundaries(self, start_date, end_date):
         """Calculate weekly boundaries for the program period"""
@@ -412,7 +422,11 @@ class ProgressTracker:
                 )
                 return 0
 
-        return total_points
+        # Apply importance multiplier
+        multiplier = self._get_importance_multiplier(
+            getattr(objective, "importance", "bien")
+        )
+        return total_points * multiplier
 
     def _compute_program_objective_points(self, objective, user_data):
         """Compute points for program-wide objectives"""
@@ -450,18 +464,23 @@ class ProgressTracker:
             return 0
 
         # Apply scoring method
+        points = 0
         if objective.scoring == "binary":
             if value >= objective.target_value:
-                return objective.weight
-            else:
-                return 0
+                points = objective.weight
         elif objective.scoring == "proportional":
-            return objective.weight * value / objective.target_value
+            points = objective.weight * value / objective.target_value
         else:
             print(
                 f"⚠️ Unknown scoring method for objective {objective.id}: '{objective.scoring}'"
             )
             return 0
+
+        # Apply importance multiplier
+        multiplier = self._get_importance_multiplier(
+            getattr(objective, "importance", "bien")
+        )
+        return points * multiplier
 
     def compute_progress(self, user_data):
         "Compute current and expected progress"
@@ -502,14 +521,21 @@ class ProgressTracker:
 
         # Process objectives
         for obj in self.program.objectives:
+            # Get importance multiplier
+            multiplier = self._get_importance_multiplier(
+                getattr(obj, "importance", "bien")
+            )
+
             if obj.frequency == "daily":
                 # Daily objectives: each day in program period can contribute
-                obj_total_points = obj.weight * total_days
-                obj_expected_points = obj.weight * elapsed_days
+                obj_total_points = obj.weight * total_days * multiplier
+                obj_expected_points = obj.weight * elapsed_days * multiplier
 
             elif obj.frequency == "weekly":
                 # Weekly objectives: only complete weeks can contribute
-                obj_total_points = obj.weight * weekly_info["num_complete_weeks"]
+                obj_total_points = (
+                    obj.weight * weekly_info["num_complete_weeks"] * multiplier
+                )
 
                 # Calculate expected points for weekly objectives
                 if weekly_info["num_complete_weeks"] == 0:
@@ -535,12 +561,16 @@ class ProgressTracker:
                                 weekly_info["num_complete_weeks"],
                             )
 
-                    obj_expected_points = obj.weight * elapsed_complete_weeks
+                    obj_expected_points = (
+                        obj.weight * elapsed_complete_weeks * multiplier
+                    )
 
             elif obj.frequency == "program":
                 # Program objectives: fixed points for entire program
-                obj_total_points = obj.weight
-                obj_expected_points = obj.weight * (elapsed_days / total_days)
+                obj_total_points = obj.weight * multiplier
+                obj_expected_points = (
+                    obj.weight * (elapsed_days / total_days) * multiplier
+                )
 
             else:
                 print(

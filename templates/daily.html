@@ -115,8 +115,26 @@
             <div class="space-y-2">
                 {% for objective in program.objectives %}
                 <div class="bg-card rounded-lg border border-border p-4 animate-fade-in flex items-center justify-between" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
-                    <div class="flex-1">
-                        <h3 class="font-medium text-foreground">{{ objective.name }}</h3>
+                    <div class="flex items-center gap-3 flex-1">
+                        <!-- Importance indicator -->
+                        <div class="flex-shrink-0">
+                            {% if objective.importance == 'indispensable' %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 rounded-full" title="Indispensable (x3 points)">
+                                    🔴
+                                </span>
+                            {% elif objective.importance == 'important' %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30 rounded-full" title="Important (x2 points)">
+                                    🟠
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 rounded-full" title="Bien (x1 point)">
+                                    🟢
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-foreground">{{ objective.name }}</h3>
+                        </div>
                     </div>
                     
                     <div class="ml-4">
