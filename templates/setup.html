@@ -33,20 +33,30 @@
         {% endif %}
         <div class="max-w-4xl mx-auto space-y-8 mt-8">
             <!-- Program Selection Section -->
-            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-primary/10 rounded-lg">
-                        <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in">
+                <div class="flex items-center justify-between gap-3 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-primary/10 rounded-lg">
+                            <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-foreground">Program Management</h2>
                     </div>
-                    <h2 class="text-2xl font-bold text-foreground">Program Selection</h2>
+                    
+                    <!-- Delete Program Button -->
+                    <button type="button" id="deleteProgram" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium text-sm" style="display: none;">
+                        <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Delete Program
+                    </button>
                 </div>
                 
-                <!-- Current Program Card -->
-                <div class="mb-8">
-                    <label class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Current Program</label>
-                    <div id="currentProgramDisplay" class="p-4 bg-primary/5 border-2 border-primary/20 rounded-lg text-foreground">
+                <!-- Current Program Display -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-foreground mb-2">Current Program</label>
+                    <div id="currentProgramDisplay" class="p-4 bg-accent/30 border border-border rounded-lg text-foreground">
                         <div class="flex items-center justify-center">
                             <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-3"></div>
                             <span class="text-muted-foreground">Loading...</span>
@@ -54,90 +64,72 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Program Switcher -->
-                    <div class="space-y-4">
-                        <label for="programSelector" class="block text-sm font-semibold text-foreground uppercase tracking-wide">Switch to Program</label>
-                        <div class="space-y-3">
-                            <select id="programSelector" class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
-                                <option value="">Select a program...</option>
-                                <!-- Options will be populated by JS -->
-                            </select>
-                            <button type="button" id="switchProgram" class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-semibold transform hover:scale-105">
-                                <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                                </svg>
-                                Switch Program
-                            </button>
-                        </div>
+                    <div class="space-y-3">
+                        <label for="programSelector" class="block text-sm font-medium text-foreground">Switch Program</label>
+                        <select id="programSelector" class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="">Select a program...</option>
+                            <!-- Options will be populated by JS -->
+                        </select>
+                        <button type="button" id="switchProgram" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+                            Switch Program
+                        </button>
                     </div>
                     
                     <!-- Program Creator -->
-                    <div class="space-y-4">
-                        <label class="block text-sm font-semibold text-foreground uppercase tracking-wide">Create New Program</label>
-                        <div class="space-y-3">
-                            <input type="text" id="newProgramName" placeholder="Enter program name..." 
-                                   class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
-                            <button type="button" id="createProgram" class="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 font-semibold transform hover:scale-105">
-                                <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Create Program
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Available Programs List -->
-                <div id="programList" class="mt-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-foreground">Available Programs</h3>
-                        <span id="programCount" class="text-sm text-muted-foreground"></span>
-                    </div>
-                    <div id="programCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Program cards will be populated by JS -->
+                    <div class="space-y-3">
+                        <label for="newProgramName" class="block text-sm font-medium text-foreground">Create New Program</label>
+                        <input type="text" id="newProgramName" placeholder="Enter program name..." 
+                               class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                        <button type="button" id="createProgram" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium">
+                            <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Create Program
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Program Information -->
-            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm">
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="p-2 bg-blue-500/10 rounded-lg">
                         <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h2 class="text-2xl font-bold text-foreground">Program Information</h2>
+                    <h2 class="text-xl font-bold text-foreground">Program Information</h2>
                 </div>
                 
                 <form id="programForm" class="space-y-6">
                     <div>
-                        <label for="programName" class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Program Name</label>
+                        <label for="programName" class="block text-sm font-medium text-foreground mb-2">Program Name</label>
                         <input type="text" id="programName" name="programName" required 
                                value="{% if program %}{{ program.name }}{% endif %}"
-                               class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium text-lg"
+                               class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                                placeholder="e.g., Summer Fitness Challenge">
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="startDate" class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">Start Date</label>
+                            <label for="startDate" class="block text-sm font-medium text-foreground mb-2">Start Date</label>
                             <input type="date" id="startDate" name="startDate" required
                                    value="{% if program %}{{ program.start_date }}{% else %}{{ today_str }}{% endif %}"
-                                   class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
+                                   class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                         </div>
                         <div>
-                            <label for="endDate" class="block text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">End Date</label>
+                            <label for="endDate" class="block text-sm font-medium text-foreground mb-2">End Date</label>
                             <input type="date" id="endDate" name="endDate" required
                                    value="{% if program %}{{ program.end_date }}{% endif %}"
-                                   class="w-full px-4 py-3 border-2 border-input bg-background text-foreground rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 font-medium">
+                                   class="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                         </div>
                     </div>
                 </form>
             </div>
 
             <!-- Objectives Section -->
-            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm" style="animation-delay: 0.1s;">
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.1s;">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <div class="p-2 bg-green-500/10 rounded-lg">
@@ -145,14 +137,63 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-foreground">Objectives</h2>
+                        <div>
+                            <h2 class="text-xl font-bold text-foreground">Objectives</h2>
+                            <p class="text-sm text-muted-foreground">Define your goals with clear types and frequencies</p>
+                        </div>
                     </div>
-                    <button type="button" id="addObjective" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 font-semibold transform hover:scale-105">
-                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    <button type="button" id="addObjective" class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m-6 0h6m-6 0H6"></path>
                         </svg>
                         Add Objective
                     </button>
+                </div>
+                
+                <!-- Objective Type Legend -->
+                <div class="mb-6 p-4 bg-accent/30 rounded-lg border border-border">
+                    <h3 class="text-sm font-medium text-foreground mb-3">Objective Types:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-mono bg-secondary px-2 py-1 rounded">✓</span>
+                            <div>
+                                <div class="font-medium text-foreground">Checkbox</div>
+                                <div class="text-muted-foreground">Yes/No objectives</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-mono bg-secondary px-2 py-1 rounded">↗</span>
+                            <div>
+                                <div class="font-medium text-foreground">Cumulative</div>
+                                <div class="text-muted-foreground">Track progress that adds up</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-mono bg-secondary px-2 py-1 rounded">#</span>
+                            <div>
+                                <div class="font-medium text-foreground">Latest Value</div>
+                                <div class="text-muted-foreground">Track current status</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-sm font-medium text-foreground mb-3 mt-4">Scoring Types:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-mono bg-secondary px-2 py-1 rounded">%</span>
+                            <div>
+                                <div class="font-medium text-foreground">Proportional</div>
+                                <div class="text-muted-foreground">Points based on progress percentage</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-mono bg-secondary px-2 py-1 rounded">All</span>
+                            <div>
+                                <div class="font-medium text-foreground">Binary</div>
+                                <div class="text-muted-foreground">All points or none</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div id="objectivesList" class="space-y-3">
@@ -215,7 +256,7 @@
             </div>
 
             <!-- Tasks Section -->
-            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm" style="animation-delay: 0.2s;">
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.2s;">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <div class="p-2 bg-orange-500/10 rounded-lg">
@@ -223,10 +264,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                             </svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-foreground">Tasks</h2>
+                        <div>
+                            <h2 class="text-xl font-bold text-foreground">Tasks</h2>
+                            <p class="text-sm text-muted-foreground">One-time activities to complete during your program</p>
+                        </div>
                     </div>
-                    <button type="button" id="addTask" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 font-semibold transform hover:scale-105">
-                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="button" id="addTask" class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
                         Add Task
@@ -267,7 +311,7 @@
             </div>
 
             <!-- Save Section -->
-            <div class="bg-gradient-to-br from-card to-card/80 p-8 rounded-xl shadow-xl border border-border/50 animate-fade-in backdrop-blur-sm" style="animation-delay: 0.3s;">
+            <div class="bg-card p-6 rounded-lg shadow-lg border border-border animate-fade-in" style="animation-delay: 0.3s;">
                 <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-4">
@@ -276,9 +320,9 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-2xl font-bold text-foreground">Save Your Program</h3>
+                            <h3 class="text-xl font-bold text-foreground">Save Your Program</h3>
                         </div>
-                        <p class="text-muted-foreground text-lg mb-4">Make sure to save your changes to start tracking your progress and unlock the full power of Goal Tracker.</p>
+                        <p class="text-muted-foreground mb-4">Make sure to save your changes to start tracking your progress.</p>
                         <a href="/progress-explanation" class="inline-flex items-center text-primary hover:text-primary/80 transition-colors font-medium">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 112-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -288,15 +332,15 @@
                     </div>
                     <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
                         {% if program %}
-                        <a href="/" class="px-8 py-4 border-2 border-border text-foreground bg-background hover:bg-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200 font-semibold text-center transform hover:scale-105 shadow-md hover:shadow-lg">
-                            <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="/" class="px-6 py-3 border border-border text-foreground bg-background hover:bg-accent rounded-lg transition-colors font-medium text-center">
+                            <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
                             Dashboard
                         </a>
                         {% endif %}
-                        <button type="button" id="saveProgram" class="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 font-bold text-lg transform hover:scale-105">
-                            <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="button" id="saveProgram" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium">
+                            <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
                             </svg>
                             Save Program
@@ -614,6 +658,7 @@ function loadProgramSelector() {
     // Set up event listeners for program management
     document.getElementById('switchProgram').addEventListener('click', switchToSelectedProgram);
     document.getElementById('createProgram').addEventListener('click', createNewProgram);
+    document.getElementById('deleteProgram').addEventListener('click', deleteCurrentProgram);
     
     // Allow Enter key to create program
     document.getElementById('newProgramName').addEventListener('keypress', function(e) {
@@ -628,32 +673,41 @@ function loadCurrentProgram() {
         .then(response => response.json())
         .then(data => {
             const display = document.getElementById('currentProgramDisplay');
+            const deleteButton = document.getElementById('deleteProgram');
+            
             if (data.current_program) {
                 display.innerHTML = `
-                    <div class="flex items-center justify-between p-1">
+                    <div class="flex items-center justify-between p-2">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <svg class="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <div class="font-bold text-lg text-foreground">${data.current_program.name}</div>
+                                <div class="font-medium text-foreground">${data.current_program.name}</div>
                                 <div class="text-sm text-muted-foreground">ID: ${data.current_program.id}</div>
                             </div>
                         </div>
-                        <div class="text-xs px-3 py-1 rounded-full font-medium ${data.current_program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
+                        <div class="text-xs px-2 py-1 rounded-full font-medium ${data.current_program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
                             ${data.current_program.has_data ? '✓ Has Data' : '⚠ No Data'}
                         </div>
                     </div>
                 `;
+                
+                // Show delete button and store current program ID
+                deleteButton.style.display = 'block';
+                deleteButton.dataset.programId = data.current_program.id;
+                deleteButton.dataset.programName = data.current_program.name;
             } else {
                 display.innerHTML = '<div class="text-center p-4"><span class="text-muted-foreground">No program selected</span></div>';
+                deleteButton.style.display = 'none';
             }
         })
         .catch(error => {
             console.error('Error loading current program:', error);
             document.getElementById('currentProgramDisplay').innerHTML = '<div class="text-center p-4"><span class="text-destructive">Error loading program</span></div>';
+            document.getElementById('deleteProgram').style.display = 'none';
         });
 }
 
@@ -662,15 +716,9 @@ function loadAvailablePrograms() {
         .then(response => response.json())
         .then(programs => {
             const selector = document.getElementById('programSelector');
-            const programCards = document.getElementById('programCards');
-            const programCount = document.getElementById('programCount');
             
-            // Clear existing options and cards
+            // Clear existing options
             selector.innerHTML = '<option value="">Select a program...</option>';
-            programCards.innerHTML = '';
-            
-            // Update program count
-            programCount.textContent = `${programs.length} program${programs.length !== 1 ? 's' : ''}`;
             
             let currentProgramId = null;
             
@@ -684,45 +732,6 @@ function loadAvailablePrograms() {
                     currentProgramId = program.id;
                 }
                 selector.appendChild(option);
-                
-                // Add to program cards
-                const card = document.createElement('div');
-                card.className = `group p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:scale-105 ${
-                    program.is_current 
-                        ? 'bg-primary/5 border-primary/40 shadow-md' 
-                        : 'bg-background border-border hover:border-primary/30'
-                }`;
-                card.innerHTML = `
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 ${program.is_current ? 'bg-primary/20' : 'bg-muted'} rounded-lg flex items-center justify-center">
-                                <svg class="h-4 w-4 ${program.is_current ? 'text-primary' : 'text-muted-foreground'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="font-bold text-foreground text-lg">${program.name}</div>
-                                <div class="text-sm text-muted-foreground">ID: ${program.id}</div>
-                            </div>
-                        </div>
-                        ${program.is_current ? 
-                            '<div class="bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-bold">CURRENT</div>' : 
-                            ''
-                        }
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="text-xs px-3 py-1 rounded-full font-medium ${program.has_data ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'}">
-                            ${program.has_data ? '✓ Has Data' : '⚠ No Data'}
-                        </div>
-                        ${!program.is_current ? 
-                            `<button onclick="switchToProgram('${program.id}')" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-xs font-medium transform hover:scale-105">
-                                Switch
-                            </button>` : 
-                            '<div class="text-xs text-primary font-medium">✓ Active</div>'
-                        }
-                    </div>
-                `;
-                programCards.appendChild(card);
             });
             
             // Hide switch button if current program is selected
@@ -816,6 +825,55 @@ function createNewProgram() {
     .catch(error => {
         console.error('Error creating program:', error);
         showAlert('Error creating program', 'error');
+    });
+}
+
+function deleteCurrentProgram() {
+    const deleteButton = document.getElementById('deleteProgram');
+    const programId = deleteButton.dataset.programId;
+    const programName = deleteButton.dataset.programName;
+    
+    if (!programId) {
+        showAlert('No program selected to delete', 'error');
+        return;
+    }
+    
+    // Show confirmation modal
+    const confirmed = confirm(`Are you sure you want to delete the program "${programName}"?\n\nThis action cannot be undone and will permanently delete:\n- All program configuration\n- All progress data\n- All tracking history\n\nType "DELETE" below to confirm:`);
+    
+    if (!confirmed) {
+        return;
+    }
+    
+    // Second confirmation with text input
+    const confirmText = prompt(`To confirm deletion of "${programName}", please type "DELETE" (in capital letters):`);
+    
+    if (confirmText !== 'DELETE') {
+        showAlert('Deletion cancelled - confirmation text did not match', 'error');
+        return;
+    }
+    
+    // Proceed with deletion
+    fetch('/api/delete_program', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ program_id: programId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Program deleted successfully!');
+            // Reload the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert(`Error deleting program: ${data.error}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting program:', error);
+        showAlert('Error deleting program', 'error');
     });
 }
 </script>
