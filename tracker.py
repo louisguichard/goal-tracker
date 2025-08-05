@@ -370,28 +370,25 @@ class ProgressTracker:
         return total * multiplier
 
     def _get_weekly_boundaries(self, start_date, end_date):
-        """Calculate weekly boundaries for the program period"""
-        # 1) Find first Monday
-        if start_date.weekday() == 0:
-            first_monday = start_date
-        else:
-            first_monday = start_date + timedelta(days=7 - start_date.weekday())
+        """Calculate weekly boundaries for the program period based on program start date."""
+        total_days = (end_date - start_date).days + 1
+        if total_days < 1:
+            return {
+                "first_monday": start_date,
+                "last_sunday": end_date,
+                "num_complete_weeks": 0,
+            }
 
-        # 2) Find last Sunday
-        if end_date.weekday() == 6:
-            last_sunday = end_date
-        else:
-            last_sunday = end_date - timedelta(days=end_date.weekday() + 1)
+        num_complete_weeks = total_days // 7
 
-        # 3) Calculate number of complete weeks
-        if last_sunday < first_monday:
-            num_complete_weeks = 0
-        else:
-            num_complete_weeks = ((last_sunday - first_monday).days + 1) // 7
+        # The period of complete weeks starts at start_date and lasts for num_complete_weeks * 7 days.
+        last_day_of_complete_weeks = start_date + timedelta(
+            days=num_complete_weeks * 7 - 1
+        )
 
         return {
-            "first_monday": first_monday,
-            "last_sunday": last_sunday,
+            "first_monday": start_date,  # This is the program's start date
+            "last_sunday": last_day_of_complete_weeks,  # End of last full week
             "num_complete_weeks": num_complete_weeks,
         }
 
@@ -583,33 +580,11 @@ class ProgressTracker:
                     obj.weight * weekly_info["num_complete_weeks"] * multiplier
                 )
 
-                # Calculate expected points for weekly objectives
-                if weekly_info["num_complete_weeks"] == 0:
-                    obj_expected_points = 0
+                # Prorated expected points based on elapsed days
+                if total_days > 0:
+                    obj_expected_points = obj_total_points * (elapsed_days / total_days)
                 else:
-                    # Count how many complete weeks have elapsed
-                    elapsed_complete_weeks = 0
-
-                    if today >= weekly_info["first_monday"]:
-                        if today > weekly_info["last_sunday"]:
-                            # All weeks have elapsed
-                            elapsed_complete_weeks = weekly_info["num_complete_weeks"]
-                        else:
-                            # Calculate how many complete weeks have fully elapsed
-                            days_since_first_monday = (
-                                today - weekly_info["first_monday"]
-                            ).days
-                            elapsed_complete_weeks = (days_since_first_monday + 1) // 7
-
-                            # Make sure we don't exceed the total number of complete weeks
-                            elapsed_complete_weeks = min(
-                                elapsed_complete_weeks,
-                                weekly_info["num_complete_weeks"],
-                            )
-
-                    obj_expected_points = (
-                        obj.weight * elapsed_complete_weeks * multiplier
-                    )
+                    obj_expected_points = 0
 
             elif obj.frequency == "program":
                 # Program objectives: points based on half the total days
@@ -656,6 +631,7 @@ class ProgressTracker:
             "current_points": current_points,
             "total_points": total_points,
             "current_progress": round(current_progress, 1),
+            "expected_points": round(expected_points, 1),
             "expected_progress": round(expected_progress, 1),
             "elapsed_days": elapsed_days,
             "total_days": total_days,
