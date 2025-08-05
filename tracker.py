@@ -327,7 +327,7 @@ class ProgressTracker:
                 objective.weight * weekly_info["num_complete_weeks"] * multiplier
             )
         elif objective.frequency == "program":
-            obj_total_points = (total_days / 2) * multiplier
+            obj_total_points = objective.weight * multiplier
         else:
             print(
                 f"⚠️ Unknown objective frequency for objective {objective.id}: {objective.frequency}"
@@ -504,9 +504,18 @@ class ProgressTracker:
         points = 0
         if objective.scoring == "binary":
             if value >= objective.target_value:
-                points = total_days / 2
+                points = objective.weight
         elif objective.scoring == "proportional":
-            points = (total_days / 2) * value / objective.target_value
+            # Handle cases where the goal is to decrease the value (e.g., weight loss)
+            if objective.start_value > objective.target_value:
+                # Progress is measured by how much the value has decreased
+                progress_fraction = (objective.start_value - value) / (
+                    objective.start_value - objective.target_value
+                )
+                points = objective.weight * progress_fraction
+            else:
+                # Regular proportional scoring
+                points = objective.weight * value / objective.target_value
         else:
             print(
                 f"⚠️ Unknown scoring method for objective {objective.id}: '{objective.scoring}'"
@@ -604,11 +613,10 @@ class ProgressTracker:
 
             elif obj.frequency == "program":
                 # Program objectives: points based on half the total days
-                obj_total_points = (total_days / 2) * multiplier
+                obj_total_points = obj.weight * multiplier
                 obj_expected_points = (
-                    (total_days / 2) * (elapsed_days / total_days) * multiplier
+                    obj.weight * (elapsed_days / total_days) * multiplier
                 )
-
             else:
                 print(
                     f"⚠️ Unknown objective frequency for objective {obj.id}: {obj.frequency}"

@@ -162,6 +162,37 @@
             </div>
         </div>
         {% endif %}
+
+        <!-- All Tasks - Condensed -->
+        {% if program.tasks %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-foreground mb-4 animate-fade-in">
+                Tasks
+            </h2>
+            <div class="space-y-2">
+                {% for task in program.tasks %}
+                <div class="bg-card rounded-lg border border-border p-4 animate-fade-in flex items-center justify-between" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+                    <div class="flex items-center gap-3 flex-1">
+                        <div>
+                            <h3 class="font-medium text-foreground">{{ task.name }}</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="ml-4">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" 
+                                   data-task-id="{{ task.id }}" 
+                                   data-type="task"
+                                   {% if day_data.get(task.id) and day_data.get(task.id).value %}checked{% endif %}
+                                   class="sr-only peer task-input">
+                            <div class="w-11 h-6 bg-secondary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </main>
 </div>
 {% endblock %}
@@ -169,11 +200,14 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add event listeners to all inputs
     document.querySelectorAll('.objective-input').forEach(input => {
         input.addEventListener('change', saveProgress);
     });
     
+    document.querySelectorAll('.task-input').forEach(input => {
+        input.addEventListener('change', saveProgress);
+    });
+
     // Fix date display for today/yesterday
     const today = new Date();
     const yesterday = new Date(today);
@@ -217,14 +251,22 @@ function saveProgress(event) {
     const date = '{{ selected_date.strftime("%Y-%m-%d") }}';
     
     let itemId, itemType, value;
-    
-    itemId = input.getAttribute('data-objective-id');
-    itemType = input.getAttribute('data-type');
-    
-    if (itemType === 'binary') {
+
+    if (input.classList.contains('objective-input')) {
+        itemId = input.getAttribute('data-objective-id');
+        itemType = 'objective'; 
+        
+        if (input.getAttribute('data-type') === 'binary') {
+            value = input.checked ? 1 : 0;
+        } else {
+            value = parseFloat(input.value) || 0;
+        }
+    } else if (input.classList.contains('task-input')) {
+        itemId = input.getAttribute('data-task-id');
+        itemType = 'task';
         value = input.checked ? 1 : 0;
     } else {
-        value = parseFloat(input.value) || 0;
+        return;
     }
     
     // Save to server

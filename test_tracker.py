@@ -516,10 +516,9 @@ class TestObjectiveTypesAndScoring(BaseProgressTest):
         progress = self._run_progress_test(program_data, user_data_rows)
 
         # NOTE: The current logic for proportional scoring on 'latest' objectives doesn't make sense
-        # for goals like weight loss (where lower is better). The formula is `weight * value / target`.
-        # For value=76 and target=75, this is > 100%. The test will reflect the current implementation.
-        # Expected points: 50 (weight) * (76 / 75) * 3 (importance)
-        expected_points = 50 * (76 / 75) * 3
+        # for goals like weight loss (where lower is better).
+        # Expected points: 50 (weight) * ((80-76)/(80-75)) * 3 (importance)
+        expected_points = 50 * ((80 - 76) / (80 - 75)) * 3
         self.assertAlmostEqual(progress["current_points"], expected_points)
 
     def test_program_latest_binary_scoring(self):
