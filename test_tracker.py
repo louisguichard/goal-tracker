@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from tracker import ProgressTracker
 
 
-class TestProgressCalculation(unittest.TestCase):
+class BaseProgressTest(unittest.TestCase):
     def setUp(self):
         """Set up a temporary environment for tests."""
         self.test_dir = "temp_test_data"
@@ -53,6 +53,8 @@ class TestProgressCalculation(unittest.TestCase):
         user_data = tracker.get_user_data()
         return tracker.compute_progress(user_data)
 
+
+class TestProgressCalculation(BaseProgressTest):
     def test_progress_first_day_one_task_completed(self):
         """
         Test with one task, completed on day 1 of a 49-day program.
@@ -358,6 +360,229 @@ class TestProgressCalculation(unittest.TestCase):
         self.assertEqual(progress["current_points"], 38)  # 3 + 30 + 5
         self.assertEqual(progress["total_points"], 56)  # 21 + 30 + 5
         self.assertAlmostEqual(progress["current_progress"], 67.9, places=1)
+
+
+class TestObjectiveTypesAndScoring(BaseProgressTest):
+    def test_weekly_cumulative_proportional_scoring(self):
+        """Test weekly cumulative objective with proportional scoring."""
+        start_date = datetime.now().date()
+        days_since_monday = start_date.weekday()
+        monday = start_date - timedelta(days=days_since_monday)
+        end_date = monday + timedelta(days=6)  # 1 week
+
+        program_data = {
+            "name": "Test Program",
+            "start_date": monday.strftime("%Y-%m-%d"),
+            "end_date": end_date.strftime("%Y-%m-%d"),
+            "objectives": [
+                {
+                    "id": "obj_weekly_cumulative",
+                    "name": "Read 100 pages",
+                    "type": "cumulative",
+                    "frequency": "weekly",
+                    "scoring": "proportional",
+                    "target_value": 100,
+                    "weight": 10,
+                    "start_value": 0,
+                    "unit": "pages",
+                    "importance": "bien",
+                }
+            ],
+            "tasks": [],
+        }
+
+        # Read 50 pages over two days
+        user_data_rows = [
+            [monday.strftime("%Y-%m-%d"), "obj_weekly_cumulative", "numeric", "20"],
+            [
+                (monday + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "obj_weekly_cumulative",
+                "numeric",
+                "30",
+            ],
+        ]
+
+        progress = self._run_progress_test(program_data, user_data_rows)
+
+        # Expected points: 10 (weight) * (50 / 100) = 5 points
+        self.assertEqual(progress["current_points"], 5)
+
+    def test_weekly_cumulative_binary_scoring(self):
+        """Test weekly cumulative objective with binary scoring (fail and pass)."""
+        start_date = datetime.now().date()
+        days_since_monday = start_date.weekday()
+        monday = start_date - timedelta(days=days_since_monday)
+        end_date = monday + timedelta(days=6)
+
+        program_data = {
+            "name": "Test Program",
+            "start_date": monday.strftime("%Y-%m-%d"),
+            "end_date": end_date.strftime("%Y-%m-%d"),
+            "objectives": [
+                {
+                    "id": "obj_weekly_binary",
+                    "name": "Workout 3 times",
+                    "type": "cumulative",
+                    "frequency": "weekly",
+                    "scoring": "binary",
+                    "target_value": 3,
+                    "weight": 20,
+                    "start_value": 0,
+                    "unit": "workouts",
+                    "importance": "important",
+                }
+            ],
+            "tasks": [],
+        }
+
+        # Scenario 1: Fail (2 out of 3 workouts)
+        user_data_rows_fail = [
+            [monday.strftime("%Y-%m-%d"), "obj_weekly_binary", "numeric", "1"],
+            [
+                (monday + timedelta(days=2)).strftime("%Y-%m-%d"),
+                "obj_weekly_binary",
+                "numeric",
+                "1",
+            ],
+        ]
+        progress_fail = self._run_progress_test(program_data, user_data_rows_fail)
+        # Expected points: 0 (since target not met)
+        # Importance multiplier is x2, but 0 * 2 = 0
+        self.assertEqual(progress_fail["current_points"], 0)
+
+        # Scenario 2: Pass (3 out of 3 workouts)
+        user_data_rows_pass = [
+            [monday.strftime("%Y-%m-%d"), "obj_weekly_binary", "numeric", "1"],
+            [
+                (monday + timedelta(days=2)).strftime("%Y-%m-%d"),
+                "obj_weekly_binary",
+                "numeric",
+                "1",
+            ],
+            [
+                (monday + timedelta(days=4)).strftime("%Y-%m-%d"),
+                "obj_weekly_binary",
+                "numeric",
+                "1",
+            ],
+        ]
+        progress_pass = self._run_progress_test(program_data, user_data_rows_pass)
+        # Expected points: 20 (weight) * 2 (importance) = 40 points
+        self.assertEqual(progress_pass["current_points"], 40)
+
+    def test_program_latest_proportional_scoring(self):
+        """Test program 'latest' objective with proportional scoring."""
+        start_date = datetime.now().date()
+        end_date = start_date + timedelta(days=29)  # 30-day program
+
+        program_data = {
+            "name": "Test Program",
+            "start_date": start_date.strftime("%Y-%m-%d"),
+            "end_date": end_date.strftime("%Y-%m-%d"),
+            "objectives": [
+                {
+                    "id": "obj_program_latest",
+                    "name": "Weigh 75kg",
+                    "type": "latest",
+                    "frequency": "program",
+                    "scoring": "proportional",
+                    "target_value": 75,
+                    "weight": 50,
+                    "start_value": 80,
+                    "unit": "kg",
+                    "importance": "indispensable",
+                }
+            ],
+            "tasks": [],
+        }
+
+        # Multiple weight entries
+        user_data_rows = [
+            [start_date.strftime("%Y-%m-%d"), "obj_program_latest", "numeric", "78"],
+            [
+                (start_date + timedelta(days=10)).strftime("%Y-%m-%d"),
+                "obj_program_latest",
+                "numeric",
+                "77",
+            ],
+            [
+                (start_date + timedelta(days=20)).strftime("%Y-%m-%d"),
+                "obj_program_latest",
+                "numeric",
+                "76",
+            ],  # This is the latest value
+        ]
+
+        progress = self._run_progress_test(program_data, user_data_rows)
+
+        # NOTE: The current logic for proportional scoring on 'latest' objectives doesn't make sense
+        # for goals like weight loss (where lower is better). The formula is `weight * value / target`.
+        # For value=76 and target=75, this is > 100%. The test will reflect the current implementation.
+        # Expected points: 50 (weight) * (76 / 75) * 3 (importance)
+        expected_points = 50 * (76 / 75) * 3
+        self.assertAlmostEqual(progress["current_points"], expected_points)
+
+    def test_program_latest_binary_scoring(self):
+        """Test program 'latest' objective with binary scoring."""
+        start_date = datetime.now().date()
+        end_date = start_date + timedelta(days=29)
+
+        program_data = {
+            "name": "Test Program",
+            "start_date": start_date.strftime("%Y-%m-%d"),
+            "end_date": end_date.strftime("%Y-%m-%d"),
+            "objectives": [
+                {
+                    "id": "obj_program_latest_binary",
+                    "name": "Reach level 10",
+                    "type": "latest",
+                    "frequency": "program",
+                    "scoring": "binary",
+                    "target_value": 10,
+                    "weight": 100,
+                    "start_value": 1,
+                    "unit": "level",
+                    "importance": "bien",
+                }
+            ],
+            "tasks": [],
+        }
+
+        # Scenario 1: Fail (latest level is 9)
+        user_data_fail = [
+            [
+                start_date.strftime("%Y-%m-%d"),
+                "obj_program_latest_binary",
+                "numeric",
+                "5",
+            ],
+            [
+                (start_date + timedelta(days=15)).strftime("%Y-%m-%d"),
+                "obj_program_latest_binary",
+                "numeric",
+                "9",
+            ],
+        ]
+        progress_fail = self._run_progress_test(program_data, user_data_fail)
+        self.assertEqual(progress_fail["current_points"], 0)
+
+        # Scenario 2: Pass (latest level is 10)
+        user_data_pass = [
+            [
+                start_date.strftime("%Y-%m-%d"),
+                "obj_program_latest_binary",
+                "numeric",
+                "5",
+            ],
+            [
+                (start_date + timedelta(days=15)).strftime("%Y-%m-%d"),
+                "obj_program_latest_binary",
+                "numeric",
+                "10",
+            ],
+        ]
+        progress_pass = self._run_progress_test(program_data, user_data_pass)
+        self.assertEqual(progress_pass["current_points"], 100)
 
 
 if __name__ == "__main__":

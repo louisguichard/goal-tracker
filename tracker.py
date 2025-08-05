@@ -430,7 +430,9 @@ class ProgressTracker:
 
     def _compute_program_objective_points(self, objective, user_data):
         """Compute points for program-wide objectives"""
-
+        start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+        end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        total_days = (end_date - start_date).days + 1
         # Select data
         objective_data = [
             user_data[date_str][objective.id]["value"]
@@ -467,9 +469,9 @@ class ProgressTracker:
         points = 0
         if objective.scoring == "binary":
             if value >= objective.target_value:
-                points = objective.weight
+                points = total_days / 2
         elif objective.scoring == "proportional":
-            points = objective.weight * value / objective.target_value
+            points = (total_days / 2) * value / objective.target_value
         else:
             print(
                 f"⚠️ Unknown scoring method for objective {objective.id}: '{objective.scoring}'"
@@ -566,10 +568,10 @@ class ProgressTracker:
                     )
 
             elif obj.frequency == "program":
-                # Program objectives: fixed points for entire program
-                obj_total_points = obj.weight * multiplier
+                # Program objectives: points based on half the total days
+                obj_total_points = (total_days / 2) * multiplier
                 obj_expected_points = (
-                    obj.weight * (elapsed_days / total_days) * multiplier
+                    (total_days / 2) * (elapsed_days / total_days) * multiplier
                 )
 
             else:
@@ -799,7 +801,7 @@ class ProgressTracker:
             elif obj.frequency == "weekly":
                 obj_breakdown["total_points"] = obj.weight * (total_days // 7)
             elif obj.frequency == "program":
-                obj_breakdown["total_points"] = obj.weight
+                obj_breakdown["total_points"] = total_days / 2
 
             # Calculate current points using tracker's method
             obj_breakdown["current_points"] = self.calculate_objective_points_detailed(

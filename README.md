@@ -12,7 +12,7 @@ A web application to track program progress with objectives and tasks.
 -   **Frequencies**:
     -   Daily (1 point per day)
     -   Weekly (5 points per week)
-    -   Program (15 total points for the entire program)
+    -   Program: Points are calculated based on half the number of days in the program (e.g., a 30-day program objective is worth 15 points).
 
 ### Tasks
 -   Binary items to be completed once during the program.
@@ -60,7 +60,7 @@ A web application to track program progress with objectives and tasks.
 ### Point System
 -   **Daily objectives**: 1 point per day completed.
 -   **Weekly objectives**: 5 points per week when the target is reached.
--   **Program objectives**: 15 points when the target is reached.
+-   **Program objectives**: Points are calculated based on half the number of days in the program.
 -   **Tasks**: 5 points each when completed.
 
 ### Importance Multipliers
