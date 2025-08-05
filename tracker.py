@@ -770,13 +770,13 @@ class ProgressTracker:
                     if user_data[date_str][obj.id]["value"]:
                         completed += 1
 
-            # Determine status
+            # Determine status based on 50% threshold
             if completed == total:
-                daily_status[date_str] = "✅"  # Completed
-            elif completed > 0:
-                daily_status[date_str] = "⚠️"  # Partial
+                daily_status[date_str] = "✅"  # Done: All objectives completed
+            elif completed >= total / 2:  # 50% or more
+                daily_status[date_str] = "⚠️"  # Partial: 50% or more completed
             else:
-                daily_status[date_str] = "❌"  # Missed
+                daily_status[date_str] = "❌"  # Missed: Less than 50% completed
 
             current_date += timedelta(days=1)
 
