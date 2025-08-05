@@ -203,8 +203,8 @@
                             <div class="flex items-start gap-4">
                                 <!-- Main objective name -->
                                 <div class="flex-1 min-w-0">
-                                    <input type="text" class="objective-name w-full text-base font-medium bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground" 
-                                           value="{{ objective.name }}" placeholder="Enter objective name..." required>
+                                    <textarea class="objective-name w-full text-base font-medium bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground resize-none overflow-hidden" 
+                                           placeholder="Enter objective name..." required rows="1">{{ objective.name }}</textarea>
                                 </div>
                                 
                                 <!-- Quick settings -->
@@ -247,6 +247,13 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
                                     </button>
+                                    
+                                    <!-- Points display -->
+                                    {% if objective_points and objective.id in objective_points %}
+                                    <div class="objective-points-display ml-3 px-2 py-1 text-xs text-muted-foreground/70 whitespace-nowrap">
+                                        {{ objective_points[objective.id].points }} pts ({{ objective_points[objective.id].percentage|round|int }}%)
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -392,6 +399,7 @@ function attachAllEventListeners() {
     document.getElementById('addObjective').addEventListener('click', () => {
         addObjectiveItem();
         updateEmptyStates();
+        updateAllObjectivePoints();
         // Focus on the new objective name input
         const newItem = document.querySelector('.objective-item:last-child .objective-name');
         if (newItem) newItem.focus();
@@ -401,6 +409,7 @@ function attachAllEventListeners() {
     document.getElementById('addTask').addEventListener('click', () => {
         addTaskItem();
         updateEmptyStates();
+        updateAllObjectivePoints();
         // Focus on the new task name input
         const newItem = document.querySelector('.task-item:last-child .task-name');
         if (newItem) newItem.focus();
@@ -418,12 +427,20 @@ function attachAllEventListeners() {
     
     // Save program
     document.getElementById('saveProgram').addEventListener('click', saveProgram);
+    
+    // Add event listeners for date changes
+    document.getElementById('startDate').addEventListener('change', updateAllObjectivePoints);
+    document.getElementById('endDate').addEventListener('change', updateAllObjectivePoints);
+    
+    // Initial points calculation
+    updateAllObjectivePoints();
 }
 
 function attachObjectiveEventListeners(objectiveElement) {
     objectiveElement.querySelector('.remove-objective').addEventListener('click', e => {
         e.target.closest('.objective-item').remove();
         updateEmptyStates();
+        updateAllObjectivePoints();
     });
     
     // Add event listener for importance changes
@@ -431,9 +448,37 @@ function attachObjectiveEventListeners(objectiveElement) {
     if (importanceSelect) {
         importanceSelect.addEventListener('change', e => {
             updateImportanceColors(e.target);
+            updateAllObjectivePoints();
         });
         // Set initial colors
         updateImportanceColors(importanceSelect);
+    }
+    
+    // Add event listeners for all settings that affect points calculation
+    const settingsSelectors = ['.objective-frequency', '.objective-type', '.objective-target', '.objective-scoring'];
+    settingsSelectors.forEach(selector => {
+        const element = objectiveElement.querySelector(selector);
+        if (element) {
+            element.addEventListener('change', updateAllObjectivePoints);
+        }
+    });
+    
+    // Auto-resize textarea and update points when name changes
+    const textarea = objectiveElement.querySelector('.objective-name');
+    if (textarea) {
+        // Auto-resize function
+        const autoResize = () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        };
+        
+        textarea.addEventListener('input', () => {
+            autoResize();
+            updateAllObjectivePoints();
+        });
+        
+        // Initial resize
+        autoResize();
     }
 }
 
@@ -441,7 +486,14 @@ function attachTaskEventListeners(taskElement) {
     taskElement.querySelector('.remove-task').addEventListener('click', e => {
         e.target.closest('.task-item').remove();
         updateEmptyStates();
+        updateAllObjectivePoints();
     });
+    
+    // Update points when task name changes
+    const taskName = taskElement.querySelector('.task-name');
+    if (taskName) {
+        taskName.addEventListener('input', updateAllObjectivePoints);
+    }
 }
 
 function updateEmptyStates() {
@@ -528,8 +580,8 @@ function addObjectiveItem(objective = null) {
         <div class="flex items-start gap-4">
             <!-- Main objective name -->
             <div class="flex-1 min-w-0">
-                <input type="text" class="objective-name w-full text-base font-medium bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground" 
-                       value="${objective ? objective.name : ''}" placeholder="Enter objective name..." required>
+                <textarea class="objective-name w-full text-base font-medium bg-transparent border-none p-0 focus:outline-none focus:ring-0 placeholder-muted-foreground text-foreground resize-none overflow-hidden" 
+                       placeholder="Enter objective name..." required rows="1">${objective ? objective.name : ''}</textarea>
             </div>
             
             <!-- Quick settings -->
@@ -571,6 +623,9 @@ function addObjectiveItem(objective = null) {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
+                
+                <!-- Points display placeholder -->
+                <div class="objective-points-display ml-3 px-2 py-1 text-xs text-muted-foreground/70 whitespace-nowrap" style="display: none;"></div>
             </div>
         </div>
     `;
@@ -623,6 +678,113 @@ function updateImportanceColors(selectElement) {
     
     // Add new classes
     selectElement.className += ' ' + classes;
+}
+
+function getImportanceMultiplier(importance) {
+    const multipliers = { 'indispensable': 3, 'important': 2, 'bien': 1 };
+    return multipliers[importance] || 1;
+}
+
+function calculateObjectivePoints(objectiveElement, programDates) {
+    if (!programDates.startDate || !programDates.endDate) return 0;
+    
+    const frequency = objectiveElement.querySelector('.objective-frequency').value;
+    const weight = parseFloat(objectiveElement.querySelector('.objective-target').value) || 1;
+    const importance = objectiveElement.querySelector('.objective-importance').value;
+    
+    const multiplier = getImportanceMultiplier(importance);
+    const totalDays = Math.ceil((programDates.endDate - programDates.startDate) / (1000 * 60 * 60 * 24)) + 1;
+    
+    let objTotalPoints = 0;
+    
+    if (frequency === 'daily') {
+        objTotalPoints = weight * totalDays * multiplier;
+    } else if (frequency === 'weekly') {
+        // Calculate complete weeks
+        const firstMonday = new Date(programDates.startDate);
+        if (firstMonday.getDay() !== 1) {
+            firstMonday.setDate(firstMonday.getDate() + (8 - firstMonday.getDay()) % 7);
+        }
+        
+        const lastSunday = new Date(programDates.endDate);
+        if (lastSunday.getDay() !== 0) {
+            lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
+        }
+        
+        const numWeeks = lastSunday >= firstMonday ? 
+            Math.floor((lastSunday - firstMonday) / (1000 * 60 * 60 * 24 * 7)) + 1 : 0;
+        
+        objTotalPoints = weight * numWeeks * multiplier;
+    } else if (frequency === 'program') {
+        objTotalPoints = (totalDays / 2) * multiplier;
+    }
+    
+    return Math.round(objTotalPoints);
+}
+
+function updateAllObjectivePoints() {
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    if (!startDateInput.value || !endDateInput.value) {
+        // Hide all points displays if dates are not set
+        document.querySelectorAll('.objective-points-display').forEach(display => {
+            display.style.display = 'none';
+        });
+        return;
+    }
+    
+    const programDates = {
+        startDate: new Date(startDateInput.value),
+        endDate: new Date(endDateInput.value)
+    };
+    
+    if (programDates.endDate <= programDates.startDate) {
+        // Hide all points displays if dates are invalid
+        document.querySelectorAll('.objective-points-display').forEach(display => {
+            display.style.display = 'none';
+        });
+        return;
+    }
+    
+    const objectives = document.querySelectorAll('.objective-item');
+    let totalProgramPoints = 0;
+    const objectivePoints = [];
+    
+    // Calculate points for each objective
+    objectives.forEach(objective => {
+        const name = objective.querySelector('.objective-name').value.trim();
+        if (name) {
+            const points = calculateObjectivePoints(objective, programDates);
+            objectivePoints.push({ element: objective, points: points });
+            totalProgramPoints += points;
+        } else {
+            objectivePoints.push({ element: objective, points: 0 });
+        }
+    });
+    
+    // Add task points to total (tasks have fixed weight of 5 each)
+    const tasks = document.querySelectorAll('.task-item');
+    tasks.forEach(task => {
+        const name = task.querySelector('.task-name').value.trim();
+        if (name) {
+            totalProgramPoints += 5; // Default task weight
+        }
+    });
+    
+    // Update displays
+    objectivePoints.forEach(({ element, points }) => {
+        const display = element.querySelector('.objective-points-display');
+        const name = element.querySelector('.objective-name').value.trim();
+        
+        if (name && points > 0 && totalProgramPoints > 0) {
+            const percentage = Math.round((points / totalProgramPoints) * 100);
+            display.textContent = `${points} pts (${percentage}%)`;
+            display.style.display = 'block';
+        } else {
+            display.style.display = 'none';
+        }
+    });
 }
 
 function saveProgram() {

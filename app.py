@@ -91,7 +91,34 @@ def setup():
     """Program setup page"""
     tracker.load_program()
     today_str = datetime.now().strftime("%Y-%m-%d")
-    return render_template("setup.html", program=tracker.program, today_str=today_str)
+
+    # Calculate points for each objective
+    objective_points = {}
+    total_program_points = 0
+
+    if tracker.program:
+        # Use a dummy user_data to compute total points
+        progress_data = tracker.compute_progress(user_data={})
+        if progress_data:
+            total_program_points = progress_data.get("total_points", 0)
+
+        for obj in tracker.program.objectives:
+            max_points = tracker.get_objective_max_points(obj)
+            percentage = (
+                (max_points / total_program_points * 100) if total_program_points else 0
+            )
+            objective_points[obj.id] = {
+                "points": round(max_points),
+                "percentage": round(percentage),
+            }
+
+    return render_template(
+        "setup.html",
+        program=tracker.program,
+        today_str=today_str,
+        objective_points=objective_points,
+        total_program_points=total_program_points,
+    )
 
 
 @app.route("/progress-explanation")

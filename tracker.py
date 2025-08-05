@@ -301,6 +301,41 @@ class ProgressTracker:
         multipliers = {"indispensable": 3, "important": 2, "bien": 1}
         return multipliers.get(importance, 1)
 
+    def get_objective_max_points(self, objective):
+        """Calculate total possible points for a single objective."""
+        if not self.program or not self.program.start_date or not self.program.end_date:
+            return 0
+
+        try:
+            start_date = datetime.strptime(self.program.start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(self.program.end_date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            return 0
+
+        total_days = (end_date - start_date).days + 1
+        weekly_info = self._get_weekly_boundaries(start_date, end_date)
+
+        multiplier = self._get_importance_multiplier(
+            getattr(objective, "importance", "bien")
+        )
+
+        obj_total_points = 0
+        if objective.frequency == "daily":
+            obj_total_points = objective.weight * total_days * multiplier
+        elif objective.frequency == "weekly":
+            obj_total_points = (
+                objective.weight * weekly_info["num_complete_weeks"] * multiplier
+            )
+        elif objective.frequency == "program":
+            obj_total_points = (total_days / 2) * multiplier
+        else:
+            print(
+                f"⚠️ Unknown objective frequency for objective {objective.id}: {objective.frequency}"
+            )
+            obj_total_points = 0
+
+        return obj_total_points
+
     def _compute_objective_points(self, objective, user_data):
         """compute points for a specific objective based on type"""
         if objective.frequency == "daily":
