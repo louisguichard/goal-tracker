@@ -85,8 +85,8 @@ def create_demo_program(data_dir="data"):
 
     # Define day types for daily objectives
     num_days_so_far = (today - start_date).days + 1
-    num_fail_days = random.randint(2, 3)
-    num_soso_days = random.randint(5, 6)
+    num_fail_days = random.randint(1, 2)
+    num_soso_days = random.randint(3, 4)
     num_good_days = num_days_so_far - num_fail_days - num_soso_days
 
     day_types = (
@@ -129,13 +129,6 @@ def create_demo_program(data_dir="data"):
             4,
         ]
     )
-
-    # Complete tasks
-    user_data.append([start_date.strftime("%Y-%m-%d"), "task1", "task", 1])
-    if today > start_date + timedelta(weeks=2):
-        user_data.append(
-            [(start_date + timedelta(weeks=2)).strftime("%Y-%m-%d"), "task2", "task", 1]
-        )
 
     # Save user data to CSV
     user_data_file = os.path.join(program_folder, "user_data.csv")

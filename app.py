@@ -452,7 +452,7 @@ if __name__ == "__main__":
         from freezegun import freeze_time
         from datetime import date
 
-        demo_today = date(2025, 12, 15)
+        demo_today = date(2025, 12, 12)
         freezer = freeze_time(demo_today)
         freezer.start()
 

@@ -2,68 +2,29 @@
 
 **⚠️ This application was quickly "vibe-coded" and may not adhere to strict production standards or best practices.**
 
-A web application to track program progress with objectives and tasks.
+A powerful web application to track program progress with objectives and tasks - designed to keep you motivated and on track with your personal development goals!
 
-## Features
+![Goal Tracker Screenshot](screenshot.png)
 
-### Objectives
--   **Binary**: Yes/No completion.
--   **Numeric**: Track progress towards a specific target.
--   **Frequencies**:
-    -   Daily (1 point per day)
-    -   Weekly (5 points per week)
-    -   Program: Points are calculated based on half the number of days in the program (e.g., a 30-day program objective is worth 15 points).
+## ✨ What Makes This Special?
 
-### Tasks
--   Binary items to be completed once during the program.
--   5 points per task.
+🎯 **Smart Progress Tracking**: Never wonder if you're on track again! The app calculates your expected vs. actual progress and tells you exactly where you stand.
 
-### Progress Calculation
--   **Current Progress**: Points earned / Total possible points.
--   **Expected Progress**: Proportion of elapsed days / Total program days.
--   **Status**: On track or Behind schedule.
+📊 **Gamified Experience**: Earn points for completing objectives and tasks. Different importance levels multiply your points - making critical goals worth 3x more!
 
-## Installation
+🔄 **Flexible Goal Types**: 
+- **Daily habits** (meditation, exercise, reading)
+- **Weekly targets** (gym sessions, work meetings)  
+- **Program milestones** (finish a course, complete a project)
+- **One-time tasks** (organize workspace, update resume)
 
-### Prerequisites
--   Python 3.7+
--   pip (Python package manager)
+🎨 **Visual Progress**: Beautiful dashboard showing your overall progress with clear indicators of whether you're ahead or behind schedule.
 
-### Steps
-1.  **Clone or download the project**:
-    ```bash
-    git clone <url-du-repo>
-    cd goal-tracker
-    ```
-2.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  **Launch the application**:
-    ```bash
-    python app.py
-    ```
-4.  **Open in browser**: Access `http://localhost:5000`. The application will automatically open the setup page if no program is defined.
+⚡ **Instant Setup**: Get started in under 2 minutes - define your program duration, add your goals, and start tracking immediately!
 
-## Usage
+## 🚀 Quick Start
 
-### First Use
-1.  **Initial Configuration**: Create your first program with objectives and tasks.
-2.  **Define Objectives**: Choose type, frequency, and parameters.
-3.  **Add Tasks**: Define one-time tasks for your program.
-
-### Daily Tracking
-1.  **Daily Page**: Record daily progress for your objectives.
-2.  **Dashboard**: Visualize overall and individual progress.
-3.  **To Do Page**: View and mark your tasks as complete.
-
-### Point System
--   **Daily objectives**: 1 point per day completed.
--   **Weekly objectives**: 5 points per week when the target is reached.
--   **Program objectives**: Points are calculated based on half the number of days in the program.
--   **Tasks**: 5 points each when completed.
-
-### Importance Multipliers
--   **🔴 Indispensable**: ×3 points
--   **🟠 Important**: ×2 points
--   **🟢 Good**: ×1 point (base)
+1. Install dependencies: `pip install -r requirements.txt`
+2. Launch the app: `python app.py`
+3. Open `http://localhost:5000` in your browser
+4. Set up your first program and start crushing your goals!
