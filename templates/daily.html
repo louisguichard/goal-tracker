@@ -25,14 +25,18 @@
             
             <!-- Date Navigation -->
             <div class="flex items-center justify-center gap-4 bg-card p-3 rounded-lg border border-border">
-                <button onclick="navigateDate(-1)" 
-                   class="flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-accent transition-colors">
-                    <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </button>
+                <div class="w-9 h-9">
+                    {% if show_prev_arrow %}
+                    <button onclick="navigateDate(-1)" 
+                       class="flex items-center justify-center w-full h-full rounded-full bg-secondary hover:bg-accent transition-colors">
+                        <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    {% endif %}
+                </div>
                 
-                <div class="text-center">
+                <div class="text-center w-[280px]">
                     <div class="text-base font-semibold text-foreground" id="dateDisplay">
                         {{ selected_date.strftime('%A, %B %d, %Y') }}
                     </div>
@@ -41,12 +45,16 @@
                     </div>
                 </div>
                 
-                <button onclick="navigateDate(1)" 
-                   class="flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-accent transition-colors">
-                    <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
+                <div class="w-9 h-9">
+                    {% if show_next_arrow %}
+                    <button onclick="navigateDate(1)" 
+                       class="flex items-center justify-center w-full h-full rounded-full bg-secondary hover:bg-accent transition-colors">
+                        <svg class="h-4 w-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </header>

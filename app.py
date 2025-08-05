@@ -44,6 +44,27 @@ def daily():
     except ValueError:
         selected_date = datetime.now().date()
 
+    # Default to always show arrows
+    show_prev_arrow = True
+    show_next_arrow = True
+
+    if tracker.program.start_date and tracker.program.end_date:
+        program_start_date = datetime.strptime(
+            tracker.program.start_date, "%Y-%m-%d"
+        ).date()
+        program_end_date = datetime.strptime(
+            tracker.program.end_date, "%Y-%m-%d"
+        ).date()
+
+        if selected_date < program_start_date:
+            return redirect(url_for("daily", date=tracker.program.start_date))
+
+        if selected_date > program_end_date:
+            return redirect(url_for("daily", date=tracker.program.end_date))
+
+        show_prev_arrow = selected_date > program_start_date
+        show_next_arrow = selected_date < program_end_date
+
     user_data = tracker.get_user_data()
 
     # Get data for the selected date
@@ -56,6 +77,8 @@ def daily():
         selected_date=selected_date,
         day_data=day_data,
         user_data=user_data,
+        show_prev_arrow=show_prev_arrow,
+        show_next_arrow=show_next_arrow,
     )
 
 
