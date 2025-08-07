@@ -215,34 +215,41 @@ function updateProgressGrid(currentProgress, expectedProgress) {
     const expectedSquares = Math.floor((expectedProgress / 100) * totalSquares);
     const isAhead = currentProgress > expectedProgress;
     const isBehind = currentProgress < expectedProgress;
+
+    // Decide a single square to animate (pulse)
+    let pulseIndex;
+    if (isAhead) {
+        pulseIndex = Math.max(0, Math.min(totalSquares - 1, filledSquares - 1));
+    } else if (isBehind) {
+        pulseIndex = Math.max(0, Math.min(totalSquares - 1, expectedSquares - 1));
+    } else {
+        // On schedule (or both zero) — animate the boundary of progress/expected
+        pulseIndex = Math.max(0, Math.min(totalSquares - 1, filledSquares - 1));
+    }
     
     squares.forEach((square, index) => {
         setTimeout(() => {
+            // Clear any previous pulse animation
+            square.style.animation = '';
+
             let squareClass = 'bg-secondary';
             
             if (index < filledSquares) {
                 if (isAhead && index >= expectedSquares) {
                     squareClass = 'bg-green-500'; // Ahead of schedule
-                    // Add pulsing effect to the last green square (ahead)
-                    if (index === filledSquares - 1) {
-                        square.style.animation = 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite';
-                    }
                 } else {
-                    squareClass = 'bg-primary'; // On schedule
-                    // Add pulsing effect to the last filled square (on track)
-                    if (index === filledSquares - 1) {
-                        square.style.animation = 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite';
-                    }
+                    squareClass = 'bg-primary'; // On schedule (within expected)
                 }
             } else if (index < expectedSquares) {
                 squareClass = 'bg-orange-500'; // Behind schedule
-                // Add pulsing animation for the last orange square when behind
-                if (isBehind && index === expectedSquares - 1) {
-                    square.style.animation = 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite';
-                }
             }
             
             square.className = `aspect-square rounded-sm transition-all duration-500 ${squareClass} opacity-100`;
+
+            // Apply pulse only to the chosen single square
+            if (index === pulseIndex) {
+                square.style.animation = 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite';
+            }
         }, index * 3); // Staggered update
     });
 }
