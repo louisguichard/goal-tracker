@@ -649,27 +649,16 @@ class ProgressTracker:
         except ValueError:
             return []
 
-        # Find first Monday and last Sunday for complete weeks
-        if start_date.weekday() == 0:
-            first_monday = start_date
-        else:
-            first_monday = start_date + timedelta(days=7 - start_date.weekday())
+        # Use unified weekly boundaries (complete weeks starting from program start)
+        weekly_info = self._get_weekly_boundaries(start_date, end_date)
+        num_weeks = weekly_info["num_complete_weeks"]
 
-        if end_date.weekday() == 6:
-            last_sunday = end_date
-        else:
-            last_sunday = end_date - timedelta(days=end_date.weekday() + 1)
-
-        # Calculate number of weeks
-        if last_sunday < first_monday:
-            # Program is shorter than a week
+        if num_weeks == 0:
             return [{"week": "Week 1", "progress": 0}]
-
-        num_weeks = ((last_sunday - first_monday).days + 1) // 7
 
         weekly_data = []
         for week_num in range(num_weeks):
-            week_start = first_monday + timedelta(weeks=week_num)
+            week_start = start_date + timedelta(days=week_num * 7)
             week_end = week_start + timedelta(days=6)
 
             # Calculate progress for this week
@@ -812,15 +801,8 @@ class ProgressTracker:
                 "daily_breakdown": {},
             }
 
-            # Calculate total possible points
-            total_days = (end_date - start_date).days + 1
-
-            if obj.frequency == "daily":
-                obj_breakdown["total_points"] = obj.weight * total_days
-            elif obj.frequency == "weekly":
-                obj_breakdown["total_points"] = obj.weight * (total_days // 7)
-            elif obj.frequency == "program":
-                obj_breakdown["total_points"] = total_days / 2
+            # Calculate total possible points using the same logic as progress computation
+            obj_breakdown["total_points"] = self.get_objective_max_points(obj)
 
             # Calculate current points using tracker's method
             obj_breakdown["current_points"] = self.calculate_objective_points_detailed(
@@ -838,7 +820,11 @@ class ProgressTracker:
                         obj.frequency == "daily"
                         and user_data[date_str][obj.id]["value"]
                     ):
-                        day_points = obj.weight
+                        # Include importance multiplier for daily items to match totals
+                        multiplier = self._get_importance_multiplier(
+                            getattr(obj, "importance", "bien")
+                        )
+                        day_points = obj.weight * multiplier
 
                 obj_breakdown["daily_breakdown"][date_str] = {
                     "points": day_points,
@@ -880,17 +866,5 @@ class ProgressTracker:
         return breakdown
 
     def calculate_objective_points_detailed(self, objective, user_data):
-        """Calculate points for a specific objective (simplified version for breakdown)"""
-        if objective.frequency == "daily":
-            total = 0
-            for date in user_data:
-                if objective.id in user_data[date]:
-                    if user_data[date][objective.id]["value"]:
-                        total += objective.weight
-            return total
-        elif objective.frequency == "weekly":
-            return self._compute_weekly_objective_points(objective, user_data)
-        elif objective.frequency == "program":
-            return self._compute_program_objective_points(objective, user_data)
-        else:
-            return 0
+        """Calculate points for a specific objective for breakdown (delegates to main scoring)."""
+        return self._compute_objective_points(objective, user_data)

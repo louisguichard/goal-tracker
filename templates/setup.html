@@ -689,7 +689,9 @@ function calculateObjectivePoints(objectiveElement, programDates) {
     if (!programDates.startDate || !programDates.endDate) return 0;
     
     const frequency = objectiveElement.querySelector('.objective-frequency').value;
-    const weight = parseFloat(objectiveElement.querySelector('.objective-target').value) || 1;
+    // Align with backend default weights based on frequency
+    const defaultWeights = { daily: 1, weekly: 5, program: 15 };
+    const weight = defaultWeights[frequency] ?? 1;
     const importance = objectiveElement.querySelector('.objective-importance').value;
     
     const multiplier = getImportanceMultiplier(importance);
@@ -700,23 +702,12 @@ function calculateObjectivePoints(objectiveElement, programDates) {
     if (frequency === 'daily') {
         objTotalPoints = weight * totalDays * multiplier;
     } else if (frequency === 'weekly') {
-        // Calculate complete weeks
-        const firstMonday = new Date(programDates.startDate);
-        if (firstMonday.getDay() !== 1) {
-            firstMonday.setDate(firstMonday.getDate() + (8 - firstMonday.getDay()) % 7);
-        }
-        
-        const lastSunday = new Date(programDates.endDate);
-        if (lastSunday.getDay() !== 0) {
-            lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
-        }
-        
-        const numWeeks = lastSunday >= firstMonday ? 
-            Math.floor((lastSunday - firstMonday) / (1000 * 60 * 60 * 24 * 7)) + 1 : 0;
-        
+        // Calculate complete weeks from program start (same as backend)
+        const totalDaysLocal = totalDays;
+        const numWeeks = Math.floor(totalDaysLocal / 7);
         objTotalPoints = weight * numWeeks * multiplier;
     } else if (frequency === 'program') {
-        objTotalPoints = (totalDays / 2) * multiplier;
+        objTotalPoints = weight * multiplier;
     }
     
     return Math.round(objTotalPoints);

@@ -283,7 +283,9 @@ function updateWeeklyProgress(weeklyData) {
 function updateProgressCalendar(dailyStatus) {
     const calendar = document.getElementById('progressCalendar');
     const simulatedTodayStr = '{{ simulated_today }}';
-    const today = new Date(simulatedTodayStr + 'T00:00:00');
+    // Parse as local date to avoid timezone off-by-one
+    const [ty, tm, td] = simulatedTodayStr.split('-').map(Number);
+    const today = new Date(ty, tm - 1, td);
     
     // Use actual program dates from dashboardData
     let programStartDate, programEndDate;

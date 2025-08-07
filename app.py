@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, g
 from tracker import ProgressTracker
 from datetime import datetime
 import os
 import glob
 from werkzeug.utils import secure_filename
 import json
+import shutil
 
 app = Flask(__name__)
 
@@ -12,11 +13,17 @@ app = Flask(__name__)
 tracker = ProgressTracker()
 
 
+@app.before_request
+def ensure_program_loaded():
+    """Load the program once per request and expose a flag in g."""
+    tracker.load_program()
+    g.program_loaded = bool(tracker.program)
+
+
 @app.route("/")
 def index():
     """Dashboard"""
-    tracker.load_program()
-    if not tracker.program:
+    if not g.program_loaded:
         return redirect(url_for("setup"))
 
     user_data = tracker.get_user_data()
@@ -34,8 +41,7 @@ def index():
 @app.route("/daily")
 def daily():
     """Daily tracking page"""
-    tracker.load_program()
-    if not tracker.program:
+    if not g.program_loaded:
         return redirect(url_for("setup"))
 
     # Get selected date from query parameter, default to today
@@ -86,8 +92,7 @@ def daily():
 @app.route("/todo")
 def todo():
     """To Do page with tasks"""
-    tracker.load_program()
-    if not tracker.program:
+    if not g.program_loaded:
         return redirect(url_for("setup"))
 
     user_data = tracker.get_user_data()
@@ -113,7 +118,6 @@ def todo():
 @app.route("/setup")
 def setup():
     """Program setup page"""
-    tracker.load_program()
     today_str = datetime.now().strftime("%Y-%m-%d")
 
     # Calculate points for each objective
@@ -148,8 +152,7 @@ def setup():
 @app.route("/progress-explanation")
 def progress_explanation():
     """Progress calculation explanation page"""
-    tracker.load_program()
-    if not tracker.program:
+    if not g.program_loaded:
         return redirect(url_for("setup"))
 
     user_data = tracker.get_user_data()
@@ -234,7 +237,6 @@ def save_data():
 @app.route("/api/progress")
 def get_progress():
     """Get current progress data"""
-    tracker.load_program()
     user_data = tracker.get_user_data()
     progress = tracker.compute_progress(user_data)
     return jsonify(progress)
@@ -243,8 +245,7 @@ def get_progress():
 @app.route("/api/dashboard")
 def get_dashboard_data():
     """Get comprehensive dashboard data including weekly and daily breakdowns"""
-    tracker.load_program()
-    if not tracker.program:
+    if not g.program_loaded:
         return jsonify({"error": "No program configured"}), 400
 
     # Check if program has valid dates
@@ -438,6 +439,52 @@ def get_current_program():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/delete_program", methods=["POST"])
+def delete_program():
+    """Delete the currently selected program and its data."""
+    data = request.get_json() or {}
+    program_id = data.get("program_id")
+
+    if not program_id:
+        return jsonify({"success": False, "error": "Program ID is required"}), 400
+
+    # Prevent deleting the default root folder blindly
+    if program_id == "default":
+        # Default program stores files directly in data_dir
+        program_path = tracker.data_dir
+        program_files = [
+            os.path.join(program_path, f) for f in ("program.json", "user_data.csv")
+        ]
+        try:
+            for fp in program_files:
+                if os.path.exists(fp):
+                    os.remove(fp)
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+    else:
+        program_path = os.path.join(tracker.data_dir, program_id)
+        if not os.path.isdir(program_path):
+            return jsonify({"success": False, "error": "Program not found"}), 404
+        try:
+            shutil.rmtree(program_path)
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+
+    # If we just deleted the current program, clear selection
+    if tracker.current_program_id == program_id:
+        tracker.current_program_id = None
+        # Remove current_program.txt content
+        current_file = os.path.join(tracker.data_dir, "current_program.txt")
+        try:
+            with open(current_file, "w", encoding="utf-8") as f:
+                f.write("")
+        except Exception:
+            pass
+        tracker.program = None
+
+    return jsonify({"success": True})
 
 
 if __name__ == "__main__":
