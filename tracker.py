@@ -426,7 +426,8 @@ class ProgressTracker:
         for week_index, week_data in weeks.items():
             # Compute week value
             if objective.type == "checkbox":
-                week_value = len(week_data)
+                # Count only positive/completed entries. Value 0 should not contribute.
+                week_value = sum(1 for val in week_data if bool(val))
             elif objective.type == "cumulative":
                 # Convert all values to numbers and sum them
                 numeric_data = []
@@ -447,7 +448,12 @@ class ProgressTracker:
                 if week_value >= objective.target_value:
                     total_points += objective.weight
             elif objective.scoring == "proportional":
-                total_points += objective.weight * week_value / objective.target_value
+                # Cap per-week progress at 100% of the target to avoid exceeding weekly weight
+                if objective.target_value and objective.target_value > 0:
+                    progress_ratio = min(week_value / objective.target_value, 1.0)
+                else:
+                    progress_ratio = 0
+                total_points += objective.weight * progress_ratio
             else:
                 print(
                     f"⚠️ Unknown scoring method for objective {objective.id}: '{objective.scoring}'"
